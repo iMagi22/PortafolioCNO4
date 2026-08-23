@@ -75,30 +75,26 @@ main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:50px 20p
 .act-name{font-size:10.5px;letter-spacing:.5px;line-height:1.5;}
 .act-tag{font-size:8px;padding:1px 6px;border-radius:2px;opacity:.75;}
 
-/* ── DENIED / locked cards ── */
-.act-btn.denied{
+/* ── DENIED / locked panel (todo el parcial) ── */
+.denied-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:10px;
+  border:1px solid var(--denied)55;
+  border-radius:4px;
+  padding:44px 24px;
+  background:rgba(255,95,122,.035);
   cursor:not-allowed;
-  border-color:var(--denied)33;
-  color:var(--gdim);
-  pointer-events:none;
-  opacity:.85;
+  position:relative;
+  overflow:hidden;
 }
-.act-btn.denied::before{background:var(--denied);opacity:1;}
-.act-btn.denied .act-emoji{filter:grayscale(1);}
-.act-btn.denied .act-tag{background:rgba(255,95,122,.14);color:var(--denied);}
-
-.denied-banner{
-  display:flex;align-items:center;gap:10px;
-  border:1px dashed var(--denied)55;
-  border-radius:3px;
-  padding:14px 18px;
-  margin-bottom:16px;
-  background:rgba(255,95,122,.04);
-  color:#ffbfcb;
-  font-size:11px;
-  letter-spacing:1px;
-}
-.denied-banner i{color:var(--denied);font-size:14px;}
+.denied-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--denied);}
+.denied-card .dc-lock{font-size:40px;filter:grayscale(1) drop-shadow(0 0 14px rgba(255,95,122,.45));}
+.denied-card .dc-title{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:900;letter-spacing:3px;color:var(--denied);text-shadow:0 0 14px rgba(255,95,122,.4);}
+.denied-card .dc-sub{font-size:11px;color:var(--gdim);letter-spacing:1px;max-width:420px;line-height:1.8;}
+.denied-card .dc-tag{font-size:8px;letter-spacing:1.5px;padding:3px 10px;border-radius:2px;background:rgba(255,95,122,.14);color:var(--denied);text-transform:uppercase;}
 
 /* COLOR SCHEMES (morado + azul) */
 
@@ -229,26 +225,11 @@ footer span{color:var(--gd);}
   </div>
 
   <div class="p-body">
-    <div class="denied-banner"><i class="fa-solid fa-lock">🔒</i> Este parcial aún no está disponible. Vuelve más adelante.</div>
-    <div class="act-grid">
-      <span class="act-btn denied">
-        <div class="act-emoji">🔒</div>
-        <div class="act-num">ACCESO</div>
-        <div class="act-name">Acceso denegado</div>
-        <span class="act-tag">Parcial 2</span>
-      </span>
-      <span class="act-btn denied">
-        <div class="act-emoji">🔒</div>
-        <div class="act-num">ACCESO</div>
-        <div class="act-name">Acceso denegado</div>
-        <span class="act-tag">Parcial 2</span>
-      </span>
-      <span class="act-btn denied">
-        <div class="act-emoji">🔒</div>
-        <div class="act-num">ACCESO</div>
-        <div class="act-name">Acceso denegado</div>
-        <span class="act-tag">Parcial 2</span>
-      </span>
+    <div class="denied-card">
+      <div class="dc-lock">🔒</div>
+      <div class="dc-title">ACCESO DENEGADO</div>
+      <div class="dc-sub">Este parcial aún no está disponible. El contenido se irá habilitando conforme avance la asignatura.</div>
+      <span class="dc-tag">Parcial 2</span>
     </div>
   </div>
 </div>
@@ -266,26 +247,11 @@ footer span{color:var(--gd);}
   </div>
 
   <div class="p-body">
-    <div class="denied-banner"><i class="fa-solid fa-lock">🔒</i> Este parcial aún no está disponible. Vuelve más adelante.</div>
-    <div class="act-grid">
-      <span class="act-btn denied">
-        <div class="act-emoji">🔒</div>
-        <div class="act-num">ACCESO</div>
-        <div class="act-name">Acceso denegado</div>
-        <span class="act-tag">Parcial 3</span>
-      </span>
-      <span class="act-btn denied">
-        <div class="act-emoji">🔒</div>
-        <div class="act-num">ACCESO</div>
-        <div class="act-name">Acceso denegado</div>
-        <span class="act-tag">Parcial 3</span>
-      </span>
-      <span class="act-btn denied">
-        <div class="act-emoji">🔒</div>
-        <div class="act-num">ACCESO</div>
-        <div class="act-name">Acceso denegado</div>
-        <span class="act-tag">Parcial 3</span>
-      </span>
+    <div class="denied-card">
+      <div class="dc-lock">🔒</div>
+      <div class="dc-title">ACCESO DENEGADO</div>
+      <div class="dc-sub">Este parcial aún no está disponible. El contenido se irá habilitando conforme avance la asignatura.</div>
+      <span class="dc-tag">Parcial 3</span>
     </div>
   </div>
 </div>
