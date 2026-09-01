@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad 04 — Una página demasiado convincente</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed var(--g); padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .risk-badge { display:inline-block; border:2px solid var(--g); color:var(--g); font-weight:bold; padding:6px 20px; letter-spacing:3px; margin-top:10px; animation:blink-border 1.8s ease-in-out infinite; }
+        @keyframes blink-border { 0%,100%{box-shadow:0 0 6px var(--g);} 50%{box-shadow:0 0 20px var(--g),inset 0 0 10px rgba(179,136,255,.15);} }
+
+        .stat-row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+        .stat-card { background:rgba(179,136,255,.05); border:1px solid var(--bdr); border-top:2px solid var(--g); padding:14px 20px; text-align:center; min-width:110px; }
+        .stat-card .sv { font-size:1.8rem; font-weight:900; color:var(--g); line-height:1; }
+        .stat-card .sv.blue { color:var(--ap); }
+        .stat-card .sv.red { color:var(--denied); }
+        .stat-card .sl { font-size:.65rem; color:var(--gdim); letter-spacing:.1em; margin-top:3px; }
+
+        .obj-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:14px; }
+        .obj-card { border:1px solid var(--bdr); padding:14px 16px; background:rgba(179,136,255,.03); }
+        .obj-card i { color:var(--ap); margin-right:6px; }
+
+        .req-list { list-style:none; margin-top:12px; }
+        .req-list li { border-left:2px solid var(--g); padding:10px 14px; margin-bottom:10px; background:rgba(179,136,255,.03); }
+        .req-list li b { color:var(--g); }
+        .req-list code { color:var(--ap); background:rgba(59,157,255,.08); padding:1px 6px; border-radius:2px; }
+
+        .code-window { border:1px solid var(--bdr); border-radius:3px; overflow:hidden; margin:14px 0; }
+        .code-bar { background:rgba(0,0,0,.4); padding:8px 14px; font-size:.7rem; color:var(--gdim); border-bottom:1px solid var(--bdr); display:flex; align-items:center; gap:8px; }
+        .code-bar i { color:var(--ap); }
+        .code-body { padding:0; }
+        .code-body pre { margin:0; padding:16px; overflow-x:auto; font-size:.76rem; line-height:1.65; color:var(--txt); }
+
+        .step-flow { display:flex; flex-wrap:wrap; gap:0; margin-top:14px; }
+        .step-box { flex:1; min-width:170px; border:1px solid var(--bdr); border-right:none; padding:14px 12px; position:relative; background:rgba(179,136,255,.02); }
+        .step-box:last-child { border-right:1px solid var(--bdr); }
+        .step-box::after { content:'▶'; position:absolute; right:-10px; top:50%; transform:translateY(-50%); color:var(--g); font-size:.65rem; z-index:2; }
+        .step-box:last-child::after { display:none; }
+        .step-box .sn { font-size:.6rem; color:var(--ap); letter-spacing:.15em; margin-bottom:5px; }
+        .step-box .st { font-weight:bold; color:#fff; font-size:.8rem; margin-bottom:4px; }
+        .step-box .sd { font-size:.68rem; color:var(--gdim); line-height:1.5; }
+
+        .evidence-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:14px; }
+        .evidence-card { border:1px solid var(--bdr); overflow:hidden; }
+        .evidence-card img { width:100%; display:block; }
+        .evidence-caption { padding:10px 14px; font-size:.72rem; color:var(--gdim); border-top:1px solid var(--bdr); background:rgba(179,136,255,.03); }
+        .evidence-caption b { color:var(--g); }
+
+        .warn-box { border:1px solid var(--denied); background:rgba(255,95,122,.05); padding:16px 18px; margin-top:10px; }
+        .warn-box h3 { color:var(--denied); font-size:.85rem; margin-bottom:8px; }
+        .warn-box p { font-size:.78rem; color:var(--txt); opacity:.9; line-height:1.7; }
+
+        .rubric-table { width:100%; border-collapse:collapse; font-size:.76rem; margin-top:10px; }
+        .rubric-table th { color:var(--g); text-align:left; padding:8px 10px; border-bottom:1px solid var(--bdr); background:rgba(179,136,255,.06); font-size:.68rem; letter-spacing:.05em; }
+        .rubric-table td { padding:8px 10px; border-bottom:1px solid rgba(179,136,255,.08); color:var(--txt); opacity:.9; vertical-align:top; }
+        .rubric-table tr:hover td { background:rgba(179,136,255,.02); }
+
+        .concl-box { border:1px solid var(--bdr); border-top:2px solid var(--g); padding:16px 18px; margin-top:14px; background:rgba(179,136,255,.02); }
+        .concl-box h3 { color:var(--g); font-size:.8rem; letter-spacing:1px; margin-bottom:10px; }
+        .concl-box p { font-size:.82rem; color:var(--txt); line-height:1.9; margin-bottom:8px; }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
+
+<main>
+    <a href="../actividades.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Actividades</a>
+
+    <!-- ══════════════════ ENCABEZADO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-user-secret"></i> Actividad 04 — Una página demasiado convincente</h2>
+        <div class="info-box">
+            <p><i class="fas fa-code"></i> CNO IV — Programación WAP</p>
+            <p><i class="fas fa-user-graduate"></i> Magdalena Yesenia Tristán Rivera — 174702</p>
+            <p><i class="fas fa-users"></i> Grupo: T37A</p>
+            <p><i class="fas fa-chalkboard-user"></i> Profesor: Servando López Contreras</p>
+            <p><i class="fas fa-calendar"></i> 31 / 08 / 2026</p>
+            <span class="risk-badge">CREDENTIAL HARVESTER · SOCIAL-ENGINEER TOOLKIT</span>
+        </div>
+        <div class="stat-row">
+            <div class="stat-card"><div class="sv">SET</div><div class="sl">Herramienta utilizada</div></div>
+            <div class="stat-card"><div class="sv blue">127.0.0.1</div><div class="sl">Entorno aislado (localhost)</div></div>
+            <div class="stat-card"><div class="sv red">Custom Import</div><div class="sl">Sin clonar sitios reales</div></div>
+            <div class="stat-card"><div class="sv blue">Kali · WSL2</div><div class="sl">Plataforma del laboratorio</div></div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ OBJETIVOS ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-bullseye"></i> Objetivo de la actividad</h2>
+        <p>Implementar y analizar, en un entorno de laboratorio controlado, una simulación de ingeniería social mediante el Social-Engineer Toolkit (SET), utilizando una página web ficticia para comprender el funcionamiento de una técnica de captura de información y reconocer los elementos que permiten identificar un intento de phishing.</p>
+
+        <h2 style="margin-top:22px;"><i class="fas fa-list-check"></i> Objetivos Específicos</h2>
+        <div class="obj-grid">
+            <div class="obj-card"><i class="fas fa-toolbox"></i>Configurar un escenario básico de ingeniería social con SET.</div>
+            <div class="obj-card"><i class="fas fa-globe"></i>Implementar una página web ficticia mediante el módulo Credential Harvester.</div>
+            <div class="obj-card"><i class="fas fa-magnifying-glass"></i>Analizar cómo se transmite y registra la información introducida en un formulario.</div>
+            <div class="obj-card"><i class="fas fa-triangle-exclamation"></i>Identificar indicadores técnicos y visuales que delatan una página fraudulenta.</div>
+            <div class="obj-card"><i class="fas fa-shield-halved"></i>Proponer controles de seguridad orientados a prevenir el impacto de ataques de phishing.</div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ ESCENARIO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-theater-masks"></i> Descripción del escenario</h2>
+        <p>El escenario simula el área de seguridad informática de una organización que ha recibido varios reportes de empleados que aseguran haber recibido un mensaje relacionado con una supuesta actualización de sus credenciales de inicio de sesión. El mensaje contiene un enlace que dirige a un portal aparentemente institucional.</p>
+        <p>Para esta actividad se desarrolló una página ficticia de autenticación correspondiente a un sistema inventado, llamado <strong>Portal Académico UNITEC-LAB</strong>. La página incluye logotipo, campos de usuario y contraseña, un botón de inicio de sesión y un mensaje indicando que la sesión ha expirado y se necesita iniciar sesión nuevamente.</p>
+        <div class="warn-box">
+            <h3>⚠ ENTORNO 100% CONTROLADO</h3>
+            <p>El portal no pertenece a ninguna organización real: fue construido específicamente para este laboratorio, se ejecuta únicamente dentro de la propia computadora (127.0.0.1) y en ningún momento se utilizaron dominios, credenciales o servidores reales.</p>
+        </div>
+    </section>
+
+    <!-- ══════════════════ CONFIGURACIÓN DEL LABORATORIO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-terminal"></i> Configuración del laboratorio</h2>
+        <p>El ataque se simuló utilizando <strong>Kali Linux ejecutado mediante WSL2</strong> sobre Windows. Esta instancia cumple simultáneamente el papel de atacante — al correr Social-Engineer Toolkit y levantar el servidor web falso con Credential Harvester — y de víctima, ya que el navegador que "cae" en la página falsa se abre en la misma computadora y accede a través de 127.0.0.1 (localhost). Esto reproduce el mismo entorno aislado y controlado que pide la actividad, sin exponer nada hacia redes externas.</p>
+
+        <ul class="req-list">
+            <li><b>1. Instalación</b><br>Instalación de Social-Engineer Toolkit (SET) y del servidor Apache dentro de Kali Linux (paquete <code>set</code>).</li>
+            <li><b>2. Página ficticia</b><br>Creación de <code>index.html</code> del Portal Académico UNITEC-LAB, con nombre del sistema, campos de usuario/contraseña, botón de ingreso y mensaje de sesión expirada.</li>
+            <li><b>3. Verificación</b><br>Se comprobó que la página se renderiza correctamente antes de iniciar el ataque.</li>
+            <li><b>4. Módulo de ataque</b><br>Inicio de SET (<code>sudo setoolkit</code>) y navegación hasta <b>Credential Harvester Attack Method</b>, usando <b>Custom Import</b> — en vez de Site Cloner — para no clonar ningún portal real.</li>
+            <li><b>5. POST-back</b><br>Configuración de la IP de POST-back en <code>127.0.0.1</code>, para que toda la información capturada se quede dentro de la misma máquina.</li>
+        </ul>
+
+        <div class="evidence-grid" style="margin-top:18px;">
+            <div class="evidence-card">
+                <img src="img/actividad4-fig1.png" alt="Código fuente de index.html del Portal Académico UNITEC-LAB">
+                <div class="evidence-caption"><b>Figura 1.</b> Código fuente completo de la página ficticia (index.html), verificado antes de iniciar el ataque.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ EVIDENCIAS ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-camera"></i> Evidencias y descripción del funcionamiento</h2>
+        <p>A continuación se documenta, paso a paso, la ejecución completa de la práctica dentro de Kali Linux.</p>
+
+        <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-power-off"></i> 1. Inicio de SET</h2>
+        <div class="evidence-grid">
+            <div class="evidence-card">
+                <img src="img/actividad4-fig2.png" alt="Arranque de setoolkit y aceptación de términos">
+                <div class="evidence-caption"><b>Figura 2.</b> Arranque de setoolkit y aceptación de los términos de uso del programa.</div>
+            </div>
+            <div class="evidence-card">
+                <img src="img/actividad4-fig3.png" alt="Menú principal de SET">
+                <div class="evidence-caption"><b>Figura 3.</b> Menú principal de SET, listo para seleccionar Social-Engineering Attacks.</div>
+            </div>
+        </div>
+
+        <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-crosshairs"></i> 2. Selección del vector de ataque</h2>
+        <div class="evidence-grid">
+            <div class="evidence-card">
+                <img src="img/actividad4-fig4.png" alt="Menú de Website Attack Vectors">
+                <div class="evidence-caption"><b>Figura 4.</b> Menú de Website Attack Vectors, con la opción Credential Harvester Attack Method disponible.</div>
+            </div>
+            <div class="evidence-card">
+                <img src="img/actividad4-fig5.png" alt="Submenú de Credential Harvester">
+                <div class="evidence-caption"><b>Figura 5.</b> Submenú de Credential Harvester: se eligió Custom Import para usar la página propia, sin clonar sitios reales.</div>
+            </div>
+        </div>
+
+        <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-gears"></i> 3. Configuración del Harvester</h2>
+        <div class="evidence-grid">
+            <div class="evidence-card">
+                <img src="img/actividad4-fig6.png" alt="Configuración de IP de POST-back y ruta al index.html">
+                <div class="evidence-caption"><b>Figura 6.</b> Configuración de la IP de POST-back (127.0.0.1) y la ruta al archivo index.html del Portal Académico UNITEC-LAB.</div>
+            </div>
+            <div class="evidence-card">
+                <img src="img/actividad4-fig7.png" alt="Credential Harvester activo en el puerto 80">
+                <div class="evidence-caption"><b>Figura 7.</b> Confirmación de que el Credential Harvester quedó activo y escuchando en el puerto 80.</div>
+            </div>
+        </div>
+
+        <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-user-injured"></i> 4. Simulación de la víctima</h2>
+        <div class="evidence-grid">
+            <div class="evidence-card">
+                <img src="img/actividad4-fig8.png" alt="Portal Académico UNITEC-LAB renderizado en el navegador">
+                <div class="evidence-caption"><b>Figura 8.</b> Portal Académico UNITEC-LAB renderizado en el navegador (http://localhost), listo para recibir credenciales de prueba.</div>
+            </div>
+            <div class="evidence-card">
+                <img src="img/actividad4-fig9.png" alt="Credential Harvester capturando credenciales - WE GOT A HIT">
+                <div class="evidence-caption"><b>Figura 9.</b> Credential Harvester capturando en tiempo real las credenciales de prueba enviadas ("WE GOT A HIT!").</div>
+            </div>
+        </div>
+
+        <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-file-lines"></i> 5. Reporte generado</h2>
+        <div class="evidence-grid">
+            <div class="evidence-card">
+                <img src="img/actividad4-fig10.png" alt="Carpeta de reportes de SET">
+                <div class="evidence-caption"><b>Figura 10.</b> Carpeta de reportes de SET (/root/.set/reports/) con el archivo XML generado tras finalizar la captura.</div>
+            </div>
+            <div class="evidence-card">
+                <img src="img/actividad4-fig11.png" alt="Contenido del reporte XML con credenciales capturadas">
+                <div class="evidence-caption"><b>Figura 11.</b> Contenido del reporte XML: URL de origen y credenciales (username / password) capturadas en texto plano.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ FLUJO DE CAPTURA ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-diagram-project"></i> Explicación del flujo de captura de información</h2>
+        <p>El recorrido completo de la información, desde que la víctima recibe el enlace hasta que el atacante cuenta con sus credenciales, sigue esta secuencia:</p>
+
+        <div class="step-flow">
+            <div class="step-box"><div class="sn">PASO 01</div><div class="st">Víctima</div><div class="sd">Recibe un mensaje (correo, SMS o chat) con un enlace que aparenta dirigir al portal institucional.</div></div>
+            <div class="step-box"><div class="sn">PASO 02</div><div class="st">Servidor SET</div><div class="sd">Apache + Credential Harvester sirven <code>index.html</code> en 127.0.0.1:80.</div></div>
+            <div class="step-box"><div class="sn">PASO 03</div><div class="st">Envío POST</div><div class="sd">La víctima escribe usuario y contraseña, y presiona "Ingresar".</div></div>
+            <div class="step-box"><div class="sn">PASO 04</div><div class="st">Captura</div><div class="sd">SET intercepta el POST, extrae los parámetros y muestra "WE GOT A HIT!".</div></div>
+            <div class="step-box"><div class="sn">PASO 05</div><div class="st">Reporte</div><div class="sd">Credenciales guardadas en <code>/root/.set/reports/*.xml</code>, listas para el atacante.</div></div>
+        </div>
+
+        <h2 style="margin-top:26px;"><i class="fas fa-code-compare"></i> Diferencia entre captura de credenciales y vulneración de una contraseña</h2>
+        <p>Aunque suelen confundirse, son dos ataques distintos. La <strong>captura de credenciales</strong> — lo realizado en esta práctica — es un ataque de ingeniería social: la víctima entrega voluntariamente su usuario y contraseña reales a una página falsa, engañada por el contexto (urgencia, apariencia institucional). No se rompe ningún mecanismo criptográfico ni se adivina nada; el atacante obtiene la contraseña porque la propia víctima la escribió.</p>
+        <p><strong>Vulnerar una contraseña</strong>, en cambio, es un ataque técnico dirigido contra el mecanismo de autenticación: fuerza bruta, ataques de diccionario, o explotar hashes almacenados de forma débil, todo ello sin que la víctima participe ni tenga conocimiento del intento. Por eso los controles que mitigan cada uno son distintos: contra la captura de credenciales sirven la capacitación y la verificación de la fuente; contra la vulneración de contraseñas sirven políticas de contraseñas robustas, bloqueo por intentos fallidos y almacenamiento seguro de hashes.</p>
+    </section>
+
+    <!-- ══════════════════ INDICADORES DE PHISHING ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-magnifying-glass"></i> Indicadores de phishing identificados</h2>
+        <p>A partir del propio Portal Académico UNITEC-LAB construido en el laboratorio, se identificaron los siguientes indicadores que permiten reconocer una página de phishing:</p>
+        <table class="rubric-table">
+            <tr><th style="width:38%">Indicador observado</th><th>Por qué delata phishing</th></tr>
+            <tr><td>URL basada en una IP o "localhost" en vez de un dominio institucional</td><td>Un portal legítimo usa su propio dominio registrado (por ejemplo unitec.edu.mx); nunca una IP directa.</td></tr>
+            <tr><td>Ausencia de HTTPS / candado en el navegador</td><td>Un sistema real que solicita contraseñas cifra el tráfico con TLS; el laboratorio sirvió la página por HTTP plano.</td></tr>
+            <tr><td>Mensaje de urgencia ("su sesión ha expirado, inicie sesión nuevamente")</td><td>Técnica clásica de ingeniería social: presiona a actuar rápido, sin verificar, generando ansiedad.</td></tr>
+            <tr><td>Diseño genérico o ligeramente distinto al portal real de la institución</td><td>Las páginas fraudulentas construidas rápido suelen tener inconsistencias visuales, tipografías o logotipos de baja calidad.</td></tr>
+            <tr><td>El formulario no lleva a un panel funcional tras enviarse</td><td>Los sitios de captura de credenciales no tienen backend real: solo capturan y redirigen a otra parte.</td></tr>
+            <tr><td>Origen del enlace inesperado (correo, QR o mensaje no solicitado)</td><td>El vector de entrada nunca es un acceso habitual guardado por el usuario, sino un enlace que llegó por sorpresa.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ CONTROLES DE SEGURIDAD ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-shield-halved"></i> Controles de seguridad propuestos</h2>
+        <p>Para cada control se incluye su justificación y, siguiendo el criterio de evaluación, su alcance real y sus limitaciones:</p>
+        <table class="rubric-table">
+            <tr><th style="width:20%">Control</th><th style="width:32%">Justificación</th><th>Alcances y limitaciones</th></tr>
+            <tr>
+                <td>Autenticación multifactor (MFA)</td>
+                <td>Aunque la contraseña se filtre, el atacante no puede completar el acceso sin el segundo factor.</td>
+                <td><b>Alcance:</b> neutraliza el uso aislado de una contraseña robada. <b>Limitación:</b> no protege contra phishing en tiempo real tipo adversary-in-the-middle, que también intercepta el código o el token de sesión.</td>
+            </tr>
+            <tr>
+                <td>Filtrado de correo / anti-phishing (SPF, DKIM, DMARC)</td>
+                <td>Bloquea o marca mensajes que suplantan el dominio institucional antes de llegar al usuario.</td>
+                <td><b>Alcance:</b> reduce mensajes falsificados que lleguen por correo. <b>Limitación:</b> no cubre otros canales (SMS, WhatsApp, redes sociales) ni dominios "look-alike" no contemplados en las políticas.</td>
+            </tr>
+            <tr>
+                <td>Capacitación continua en concientización de phishing</td>
+                <td>El eslabón más débil suele ser humano; simulacros periódicos entrenan a detectar señales como las de la tabla anterior.</td>
+                <td><b>Alcance:</b> mejora la capacidad de detección del personal. <b>Limitación:</b> su efectividad decae con el tiempo si no se refuerza, y no elimina por completo el error humano.</td>
+            </tr>
+            <tr>
+                <td>Verificación de certificados y extensiones anti-phishing en el navegador</td>
+                <td>Alertan automáticamente sobre certificados inválidos o dominios de registro muy reciente.</td>
+                <td><b>Alcance:</b> detecta configuraciones técnicas sospechosas. <b>Limitación:</b> un atacante puede obtener certificados SSL válidos y gratuitos para su dominio falso, evadiendo esta señal.</td>
+            </tr>
+            <tr>
+                <td>Monitoreo de dominios similares (typosquatting) y reporte a un CSIRT</td>
+                <td>Permite dar de baja páginas falsas antes de que capturen credenciales de forma masiva.</td>
+                <td><b>Alcance:</b> reduce el tiempo de vida de campañas activas. <b>Limitación:</b> depende de la velocidad de respuesta del proveedor o registrador; el daño puede ocurrir antes del retiro del sitio.</td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ CONSIDERACIONES ÉTICAS ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-shield-alt"></i> Consideraciones Éticas y de Uso</h2>
+        <div class="warn-box">
+            <h3>⚠ USO EXCLUSIVO DE LABORATORIO CONTROLADO</h3>
+            <p>El uso de Social-Engineer Toolkit fuera de un entorno de laboratorio propio y controlado, sin consentimiento explícito del propietario del sistema objetivo, constituye una violación a la privacidad y puede configurar un delito informático conforme a la legislación aplicable. El conocimiento técnico adquirido en esta actividad debe emplearse exclusivamente para fines defensivos, de auditoría autorizada o educativos.</p>
+        </div>
+    </section>
+
+    <!-- ══════════════════ CONCLUSIÓN ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> Conclusión</h2>
+        <div class="concl-box">
+            <h3>// APRENDIZAJES</h3>
+            <p>Esta práctica permitió comprobar, de forma directa y controlada, qué tan poco esfuerzo técnico requiere una campaña de phishing efectiva: bastó una página HTML sencilla, un servidor web y un módulo de captura para obtener credenciales en texto plano en cuanto la víctima confió en la apariencia del sitio. El punto débil no estuvo en ningún cifrado roto ni en ninguna vulnerabilidad de software, sino en la confianza depositada en una interfaz visualmente convincente.</p>
+            <p>Esto confirma que la defensa contra el phishing no puede depender de un solo control: se necesita una combinación de medidas técnicas (MFA, filtrado de correo, verificación de certificados) y medidas humanas (capacitación y hábito de verificar antes de introducir credenciales), ya que cada control por sí solo tiene límites claros, como se documentó en la tabla de controles.</p>
+            <p>Reconocer los indicadores de una página falsa —URL, ausencia de HTTPS, mensajes de urgencia, inconsistencias visuales— es una habilidad tan importante como cualquier control técnico, porque suele ser la última barrera antes de que la información llegue al atacante.</p>
+        </div>
+        <div style="text-align:center;margin-top:24px;">
+            <a href="../pdf/actividad4.pdf" download class="pdf-btn">
+                <i class="fas fa-download"></i> DESCARGAR PRESENTACIÓN PDF
+            </a>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>Magdalena Yesenia Tristán Rivera – 174702</p>
+</footer>
+
+<script src="../matrix.js"></script>
+</body>
+</html>
