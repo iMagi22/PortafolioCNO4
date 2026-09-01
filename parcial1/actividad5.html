@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad 05 — Ingeniería Social (el arte del engaño)</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed var(--g); padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .risk-badge { display:inline-block; border:2px solid var(--g); color:var(--g); font-weight:bold; padding:6px 20px; letter-spacing:3px; margin-top:10px; animation:blink-border 1.8s ease-in-out infinite; }
+        @keyframes blink-border { 0%,100%{box-shadow:0 0 6px var(--g);} 50%{box-shadow:0 0 20px var(--g),inset 0 0 10px rgba(179,136,255,.15);} }
+
+        .stat-row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+        .stat-card { background:rgba(179,136,255,.05); border:1px solid var(--bdr); border-top:2px solid var(--g); padding:14px 20px; text-align:center; min-width:110px; }
+        .stat-card .sv { font-size:1.8rem; font-weight:900; color:var(--g); line-height:1; }
+        .stat-card .sv.blue { color:var(--ap); }
+        .stat-card .sl { font-size:.65rem; color:var(--gdim); letter-spacing:.1em; margin-top:3px; }
+
+        .obj-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:14px; }
+        .obj-card { border:1px solid var(--bdr); padding:14px 16px; background:rgba(179,136,255,.03); }
+        .obj-card i { color:var(--ap); margin-right:6px; }
+
+        .qa-list { list-style:none; margin-top:14px; }
+        .qa-list li { border-left:2px solid var(--g); padding:12px 16px; margin-bottom:12px; background:rgba(179,136,255,.03); }
+        .qa-list .qn { display:block; font-size:.62rem; letter-spacing:.15em; color:var(--ap); margin-bottom:5px; }
+        .qa-list .q { display:block; font-weight:bold; color:#fff; font-size:.85rem; margin-bottom:6px; }
+        .qa-list .a { font-size:.8rem; color:var(--txt); opacity:.92; line-height:1.6; }
+        .qa-list .a b { color:var(--g); }
+
+        .warn-box { border:1px solid var(--denied); background:rgba(255,95,122,.05); padding:16px 18px; margin-top:10px; }
+        .warn-box h3 { color:var(--denied); font-size:.85rem; margin-bottom:8px; }
+        .warn-box p { font-size:.78rem; color:var(--txt); opacity:.9; line-height:1.7; }
+
+        .rubric-table { width:100%; border-collapse:collapse; font-size:.76rem; margin-top:10px; }
+        .rubric-table th { color:var(--g); text-align:left; padding:8px 10px; border-bottom:1px solid var(--bdr); background:rgba(179,136,255,.06); font-size:.68rem; letter-spacing:.05em; }
+        .rubric-table td { padding:8px 10px; border-bottom:1px solid rgba(179,136,255,.08); color:var(--txt); opacity:.9; vertical-align:top; }
+        .rubric-table tr:hover td { background:rgba(179,136,255,.02); }
+
+        .concl-box { border:1px solid var(--bdr); border-top:2px solid var(--g); padding:16px 18px; margin-top:14px; background:rgba(179,136,255,.02); }
+        .concl-box h3 { color:var(--g); font-size:.8rem; letter-spacing:1px; margin-bottom:10px; }
+        .concl-box p { font-size:.82rem; color:var(--txt); line-height:1.9; margin-bottom:8px; }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
+
+<main>
+    <a href="../actividades.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Actividades</a>
+
+    <!-- ══════════════════ ENCABEZADO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-phone-volume"></i> Actividad 05 — Ingeniería Social (el arte del engaño)</h2>
+        <div class="info-box">
+            <p><i class="fas fa-code"></i> CNO IV — Programación WAP</p>
+            <p><i class="fas fa-user-graduate"></i> Tristán Rivera Magdalena Yesenia — 174702</p>
+            <p><i class="fas fa-users"></i> Grupo: T37A</p>
+            <p><i class="fas fa-chalkboard-user"></i> Profesor: Servando López Contreras</p>
+            <p><i class="fas fa-calendar"></i> 31 / 08 / 2026</p>
+            <span class="risk-badge">CASO: ROBO DE +4,100 BTC POR VISHING</span>
+        </div>
+        <div class="stat-row">
+            <div class="stat-card"><div class="sv">15</div><div class="sl">Preguntas resueltas</div></div>
+            <div class="stat-card"><div class="sv blue">4,100+ BTC</div><div class="sl">Monto robado</div></div>
+            <div class="stat-card"><div class="sv">$230-243M</div><div class="sl">USD aproximados</div></div>
+            <div class="stat-card"><div class="sv blue">3</div><div class="sl">Implicados (Lam, Chetal, Serrano)</div></div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ CONTEXTO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-circle-info"></i> Contexto del caso</h2>
+        <p>Cuestionario resuelto sobre un caso real de <strong>ingeniería social por vishing</strong>: los atacantes se hicieron pasar por soporte técnico de Google y de Gemini para engañar a la víctima, hacerla resetear su 2FA y compartir pantalla vía AnyDesk, exponiendo su clave privada y permitiendo el robo de más de 4,100 BTC. El caso terminó siendo rastreado on-chain y expuesto públicamente, con consecuencias legales para los implicados.</p>
+
+        <h2 style="margin-top:22px;"><i class="fas fa-list-check"></i> Objetivos del ejercicio</h2>
+        <div class="obj-grid">
+            <div class="obj-card"><i class="fas fa-user-secret"></i>Identificar el vector de ataque y el tipo de ingeniería social empleado (vishing / pretexting).</div>
+            <div class="obj-card"><i class="fas fa-brain"></i>Reconocer el principio psicológico (autoridad/urgencia) explotado por los atacantes.</div>
+            <div class="obj-card"><i class="fas fa-magnifying-glass-dollar"></i>Analizar el flujo del fraude: compromiso, robo, lavado de fondos y rastreo on-chain.</div>
+            <div class="obj-card"><i class="fas fa-gavel"></i>Relacionar las consecuencias legales con el tipo de delito cometido.</div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ CUESTIONARIO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-clipboard-question"></i> Respuestas del cuestionario</h2>
+        <ul class="qa-list">
+            <li>
+                <span class="qn">PREGUNTA 01</span>
+                <span class="q">¿Cuál fue el principal vector de ataque utilizado por Lam Malone?</span>
+                <span class="a">Ingeniería social por teléfono (<b>vishing</b>), haciéndose pasar por soporte de Google y luego de Gemini.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 02</span>
+                <span class="q">¿Qué principio psicológico explotó para lograr transferencias millonarias?</span>
+                <span class="a"><b>Autoridad y urgencia:</b> fingir ser soporte oficial avisando de una cuenta hackeada.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 03</span>
+                <span class="q">¿Qué tipo de ataque de ingeniería social se identifica en este caso?</span>
+                <span class="a"><b>Pretexting / vishing</b> con suplantación de identidad (spoofing de número telefónico).</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 04</span>
+                <span class="q">¿Qué debilidad de seguridad informática facilitó el fraude?</span>
+                <span class="a">La víctima reseteó su 2FA y compartió pantalla por <b>AnyDesk</b>, exponiendo su clave privada.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 05</span>
+                <span class="q">¿Cómo complementaban Chetal Veer y Serrano Jeandiel el ataque iniciado por Lam?</span>
+                <span class="a"><b>Chetal</b> entró a Gmail/iCloud buscando datos, <b>Lam</b> revisaba correos y carpetas, y <b>Serrano</b> hacía las llamadas haciéndose pasar por "atención al cliente".</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 06</span>
+                <span class="q">¿Cuál fue el resultado económico total del esquema fraudulento?</span>
+                <span class="a">Robaron más de <b>4,100 BTC</b> (aproximadamente $230–243 millones de dólares).</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 07</span>
+                <span class="q">¿Qué evento marcó el punto de quiebre del caso?</span>
+                <span class="a">El investigador on-chain <b>ZachXBT</b> rastreó las transacciones y los expuso; Chetal reveló su nombre real durante un live.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 08</span>
+                <span class="q">¿Qué evidencia física encontraron las autoridades al detener a Chetal Veer?</span>
+                <span class="a">Autos de lujo (<b>Lamborghinis, Rolls-Royce, Porsche</b>), relojes caros, bolsos de diseñador y una mansión en Miami.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 09</span>
+                <span class="q">¿Qué decisión tomó Chetal Veer frente al proceso judicial?</span>
+                <span class="a">Se declaró <b>culpable</b> y cooperó testificando contra Lam y Serrano.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 10</span>
+                <span class="q">¿Qué consecuencias legales enfrenta el grupo por estos hechos?</span>
+                <span class="a">Cargos por <b>fraude electrónico y lavado de dinero</b>, posteriormente cargos <b>RICO</b>; penas de hasta décadas de prisión.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 11</span>
+                <span class="q">¿Qué empresas fueron suplantadas durante el ataque?</span>
+                <span class="a"><b>Google</b> y <b>Gemini</b>.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 12</span>
+                <span class="q">¿Qué herramienta de acceso remoto fue utilizada para comprometer a la víctima?</span>
+                <span class="a"><b>AnyDesk</b>.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 13</span>
+                <span class="q">¿Qué acción realizaron inmediatamente después del robo para ocultar los fondos?</span>
+                <span class="a">Lavaron el dinero con <b>mezcladores cripto</b>, wallets intermedias y VPNs, repartiendo los fondos en más de <b>15 exchanges</b>.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 14</span>
+                <span class="q">¿Quién contribuyó al rastreo de las transacciones y exposición del caso?</span>
+                <span class="a">El investigador on-chain <b>ZachXBT</b>.</span>
+            </li>
+            <li>
+                <span class="qn">PREGUNTA 15</span>
+                <span class="q">¿Cuál fue el detallito que tuvo con Skylar Harrison?</span>
+                <span class="a">Lam le regaló un bolso <b>Hermès Birkin</b> en una fiesta sin que ella supiera que era dinero robado; ella luego lo contó en TikTok.</span>
+            </li>
+        </ul>
+    </section>
+
+    <!-- ══════════════════ TABLA RESUMEN ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-table-list"></i> Resumen técnico del caso</h2>
+        <table class="rubric-table">
+            <tr><th style="width:28%">Elemento</th><th>Detalle</th></tr>
+            <tr><td>Vector de ataque</td><td>Vishing (ingeniería social telefónica) con spoofing de número.</td></tr>
+            <tr><td>Principio explotado</td><td>Autoridad y urgencia — suplantación de soporte técnico oficial.</td></tr>
+            <tr><td>Herramienta clave</td><td>AnyDesk (acceso remoto) tras el reseteo del 2FA de la víctima.</td></tr>
+            <tr><td>Encubrimiento</td><td>Mezcladores cripto, wallets intermedias, VPNs y más de 15 exchanges.</td></tr>
+            <tr><td>Resolución</td><td>Rastreo on-chain por ZachXBT; declaración de culpabilidad de Chetal Veer.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ CONSIDERACIONES ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-shield-alt"></i> Reflexión y Consideraciones Éticas</h2>
+        <div class="warn-box">
+            <h3>⚠ LECCIÓN DE SEGURIDAD</h3>
+            <p>Este caso confirma que ningún control técnico sustituye la verificación humana: la víctima entregó acceso total a su cuenta simplemente porque la llamada "sonaba oficial". Ninguna empresa legítima de soporte (Google, Gemini o cualquier otra) pedirá jamás resetear un 2FA por teléfono ni compartir pantalla con un desconocido. Verificar siempre por un canal oficial distinto al de contacto, y desconfiar de cualquier mensaje que combine urgencia + autoridad, sigue siendo la mejor defensa contra el vishing.</p>
+        </div>
+    </section>
+
+    <!-- ══════════════════ DESCARGA ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-file-pdf"></i> Documento completo</h2>
+        <p>Cuestionario resuelto en formato PDF, con portada y respuestas completas.</p>
+        <div style="text-align:center;margin-top:20px;">
+            <a href="../pdf/actividad5.pdf" download class="pdf-btn">
+                <i class="fas fa-download"></i> DESCARGAR PDF — ACTIVIDAD 05
+            </a>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>Tristán Rivera Magdalena Yesenia – 174702</p>
+</footer>
+
+<script src="../matrix.js"></script>
+</body>
+</html>
