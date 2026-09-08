@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road to Hall of Fame — File Path Traversal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed var(--g); padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .risk-badge { display:inline-block; border:2px solid var(--g); color:var(--g); font-weight:bold; padding:6px 20px; letter-spacing:3px; margin-top:10px; animation:blink-border 1.8s ease-in-out infinite; }
+        @keyframes blink-border { 0%,100%{box-shadow:0 0 6px var(--g);} 50%{box-shadow:0 0 20px var(--g),inset 0 0 10px rgba(179,136,255,.15);} }
+
+        .stat-row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+        .stat-card { background:rgba(179,136,255,.05); border:1px solid var(--bdr); border-top:2px solid var(--g); padding:14px 20px; text-align:center; min-width:110px; }
+        .stat-card .sv { font-size:1.8rem; font-weight:900; color:var(--g); line-height:1; }
+        .stat-card .sv.blue { color:var(--ap); }
+        .stat-card .sl { font-size:.65rem; color:var(--gdim); letter-spacing:.1em; margin-top:3px; }
+
+        .obj-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:14px; }
+        .obj-card { border:1px solid var(--bdr); padding:14px 16px; background:rgba(179,136,255,.03); }
+        .obj-card i { color:var(--ap); margin-right:6px; }
+
+        .warn-box { border:1px solid var(--denied); background:rgba(255,95,122,.05); padding:16px 18px; margin-top:10px; }
+        .warn-box h3 { color:var(--denied); font-size:.85rem; margin-bottom:8px; }
+        .warn-box p { font-size:.78rem; color:var(--txt); opacity:.9; line-height:1.7; }
+
+        .concl-box { border:1px solid var(--bdr); border-top:2px solid var(--g); padding:16px 18px; margin-top:14px; background:rgba(179,136,255,.02); }
+        .concl-box h3 { color:var(--g); font-size:.8rem; letter-spacing:1px; margin-bottom:10px; }
+        .concl-box p { font-size:.82rem; color:var(--txt); line-height:1.9; margin-bottom:8px; }
+
+        .code-window { border:1px solid var(--bdr); border-radius:3px; overflow:hidden; margin:14px 0; }
+        .code-bar { background:rgba(0,0,0,.4); padding:8px 14px; font-size:.7rem; color:var(--gdim); border-bottom:1px solid var(--bdr); display:flex; align-items:center; gap:8px; }
+        .code-bar i { color:var(--ap); }
+        .code-body pre { margin:0; padding:16px; overflow-x:auto; font-size:.76rem; line-height:1.65; color:var(--txt); background:rgba(0,0,0,.25); }
+        .code-body code { color:#7ee787; }
+
+        /* ===== ROADMAP ===== */
+        .roadmap { position:relative; margin-top:30px; padding-left:34px; }
+        .roadmap::before { content:''; position:absolute; left:11px; top:6px; bottom:6px; width:2px; background:linear-gradient(180deg,var(--g),var(--ap)); box-shadow:0 0 8px var(--g); }
+        .rstep { position:relative; margin-bottom:34px; }
+        .rstep:last-child { margin-bottom:0; }
+        .rdot { position:absolute; left:-34px; top:4px; width:24px; height:24px; border-radius:50%; background:#0d0620; border:2px solid var(--g); display:flex; align-items:center; justify-content:center; font-family:inherit; font-size:.65rem; font-weight:900; color:var(--g); box-shadow:0 0 10px var(--g); }
+        .rcard { border:1px solid var(--bdr); border-left:3px solid var(--g); background:rgba(179,136,255,.03); padding:18px 20px; border-radius:3px; }
+        .rtop { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+        .rtitle { font-size:.95rem; font-weight:800; color:#fff; line-height:1.4; }
+        .rtitle a { color:var(--ap); font-size:.7rem; font-weight:400; display:block; margin-top:3px; }
+        .rlevel { font-size:.62rem; letter-spacing:.1em; padding:3px 10px; border-radius:2px; white-space:nowrap; font-weight:700; }
+        .rlevel.apprentice { color:var(--ap); border:1px solid var(--ap); background:rgba(59,157,255,.08); }
+        .rlevel.practitioner { color:#ffaa00; border:1px solid #ffaa00; background:rgba(255,170,0,.08); }
+        .rlevel.expert { color:var(--denied); border:1px solid var(--denied); background:rgba(255,95,122,.08); }
+        .rmeta { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+        .rmeta span { font-size:.66rem; color:var(--gdim); border:1px solid var(--bdr); padding:3px 9px; border-radius:2px; }
+        .rmeta span b { color:var(--g); }
+        .rblock { margin-bottom:12px; }
+        .rblock h4 { font-size:.68rem; letter-spacing:.08em; color:var(--g); text-transform:uppercase; margin-bottom:5px; }
+        .rblock p, .rblock li { font-size:.8rem; color:var(--txt); opacity:.92; line-height:1.65; }
+        .rblock ol { padding-left:18px; }
+        .rblock ol li { margin-bottom:4px; }
+        .payload-box { background:rgba(0,0,0,.3); border:1px solid var(--bdr); border-left:3px solid var(--ap); padding:10px 14px; font-family:'Courier New',monospace; font-size:.78rem; color:#7ee787; border-radius:2px; overflow-x:auto; margin:6px 0; }
+        .rmit { border-left:3px solid #2f9e5f !important; }
+        .revidence { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+        .revidence .ev-card { border:1px solid var(--bdr); border-radius:3px; overflow:hidden; }
+        .revidence .ev-card img { width:100%; display:block; }
+        .revidence .ev-cap { font-size:.65rem; color:var(--gdim); text-align:center; padding:5px; border-top:1px solid var(--bdr); background:rgba(179,136,255,.03); }
+        @media (max-width:640px){ .revidence{ grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
+
+<main>
+    <a href="actividades.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Actividades</a>
+
+    <!-- ══════════════════ ENCABEZADO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-road"></i> Road to Hall of Fame — File Path Traversal</h2>
+        <div class="info-box">
+            <p><i class="fas fa-code"></i> CNO IV — Programación WAP</p>
+            <p><i class="fas fa-user-graduate"></i> Tristán Rivera Magdalena Yesenia — 174702</p>
+            <p><i class="fas fa-users"></i> Grupo: T37A</p>
+            <p><i class="fas fa-chalkboard-user"></i> Profesor: Servando López Contreras</p>
+            <span class="risk-badge">PORTSWIGGER WEB SECURITY ACADEMY · 6/6 LABS</span>
+        </div>
+        <div class="stat-row">
+            <div class="stat-card"><div class="sv">6</div><div class="sl">Laboratorios resueltos</div></div>
+            <div class="stat-card"><div class="sv blue">Burp Suite</div><div class="sl">Herramienta utilizada</div></div>
+            <div class="stat-card"><div class="sv">/etc/passwd</div><div class="sl">Archivo objetivo en todos</div></div>
+            <div class="stat-card"><div class="sv blue">1 → 6</div><div class="sl">Apprentice → Expert</div></div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ MARCO TEÓRICO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-book-open"></i> ¿Qué es File Path Traversal?</h2>
+        <p>Path Traversal (también llamado Directory Traversal) es una vulnerabilidad que ocurre cuando una aplicación web usa un nombre de archivo proporcionado por el usuario para abrir o cargar un recurso, sin validar correctamente esa entrada. Al no sanitizar el parámetro, un atacante puede manipular la ruta con secuencias como <code>../</code> para salirse del directorio esperado y acceder a archivos sensibles del servidor — credenciales, configuración, código fuente, o archivos del sistema operativo como <code>/etc/passwd</code>.</p>
+
+        <h2 style="margin-top:22px;"><i class="fas fa-list-check"></i> Objetivos del módulo</h2>
+        <div class="obj-grid">
+            <div class="obj-card"><i class="fas fa-magnifying-glass"></i>Identificar parámetros de aplicación vulnerables a manipulación de rutas de archivo.</div>
+            <div class="obj-card"><i class="fas fa-bug"></i>Explotar 6 variantes de path traversal, desde el caso directo hasta técnicas de bypass de filtros.</div>
+            <div class="obj-card"><i class="fas fa-flask"></i>Usar Burp Suite (Proxy, Intercept, Repeater) para interceptar y manipular peticiones HTTP.</div>
+            <div class="obj-card"><i class="fas fa-shield-halved"></i>Explicar el porqué técnico de cada payload y su mitigación correspondiente.</div>
+        </div>
+
+        <h2 style="margin-top:22px;"><i class="fas fa-diagram-project"></i> Anatomía del ataque</h2>
+        <p>Todos los laboratorios de este módulo comparten el mismo patrón base: una aplicación construye una ruta de archivo concatenando directamente el input del usuario, sin validar que el resultado se mantenga dentro del directorio permitido.</p>
+        <div class="code-window">
+            <div class="code-bar"><i class="fas fa-terminal"></i> ejemplo — request vulnerable</div>
+            <div class="code-body"><pre><code>GET /image?filename=<span style="color:#ff5f7a;">../../../etc/passwd</span> HTTP/2
+Host: web-security-academy.net</code></pre></div>
+        </div>
+        <p>El servidor recibe <code>filename=../../../etc/passwd</code>, lo concatena a su ruta base (ej. <code>/var/www/images/</code>) y termina resolviendo <code>/etc/passwd</code> — un archivo totalmente fuera del directorio de imágenes.</p>
+    </section>
+
+    <!-- ══════════════════ ROADMAP DE LABORATORIOS ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-map-signs"></i> Ruta de laboratorios</h2>
+        <p>Cada laboratorio incrementa la dificultad: el servidor va agregando filtros y validaciones distintas para bloquear el path traversal, y cada uno requiere una técnica de bypass diferente.</p>
+
+        <div class="roadmap">
+
+            <!-- LAB 1 -->
+            <div class="rstep">
+                <div class="rdot">01</div>
+                <div class="rcard">
+                    <div class="rtop">
+                        <div class="rtitle">File path traversal, simple case
+                            <a href="https://portswigger.net/web-security/file-path-traversal/lab-simple" target="_blank" rel="noopener">portswigger.net/.../lab-simple</a>
+                        </div>
+                        <span class="rlevel apprentice">APPRENTICE</span>
+                    </div>
+                    <div class="rmeta">
+                        <span>Tipo: <b>Path traversal directo</b></span>
+                        <span>Herramienta: <b>Burp Repeater</b></span>
+                    </div>
+                    <div class="rblock">
+                        <h4>Objetivo</h4>
+                        <p>Leer el contenido de <code>/etc/passwd</code> explotando el parámetro <code>filename</code> del endpoint de imágenes, que no aplica ninguna validación sobre la ruta recibida.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Explicación técnica</h4>
+                        <p>La app arma la ruta del archivo concatenando directamente <code>filename</code> a un directorio base, sin sanitizar secuencias <code>../</code>. Al subir tres niveles de directorio se llega a la raíz del sistema de archivos, desde donde se referencia <code>etc/passwd</code> directamente.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Procedimiento</h4>
+                        <ol>
+                            <li>Interceptar con Burp la petición <code>GET /image?filename=N.jpg</code> al ver un producto.</li>
+                            <li>Enviarla a Repeater.</li>
+                            <li>Reemplazar el valor de <code>filename</code> por el payload.</li>
+                            <li>Enviar y revisar que el Response devuelva el contenido de <code>/etc/passwd</code>.</li>
+                        </ol>
+                    </div>
+                    <div class="rblock">
+                        <h4>Payload</h4>
+                        <div class="payload-box">GET /image?filename=../../../etc/passwd HTTP/2</div>
+                        <p>Cada <code>../</code> sube un nivel de directorio; tres repeticiones son suficientes para llegar a la raíz desde <code>/var/www/images/</code> y acceder a <code>/etc/passwd</code>.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Evidencias</h4>
+                        <div class="revidence">
+                            <div class="ev-card"><img src="img/lab1-burp.png" alt="Request y response del Lab 1"><div class="ev-cap">Request con payload + Response con /etc/passwd</div></div>
+                            <div class="ev-card"><img src="img/lab1-solved.png" alt="Lab 1 resuelto"><div class="ev-cap">Confirmación "Lab solved"</div></div>
+                        </div>
+                    </div>
+                    <div class="rblock rmit" style="border-left:3px solid #2f9e5f;padding-left:12px;">
+                        <h4 style="color:#4ade80;">Mitigación</h4>
+                        <p>Nunca construir rutas de archivo concatenando input del usuario directamente. Usar un mapa de identificadores a archivos permitidos (whitelist), o validar la ruta canónica resultante contra el directorio base permitido.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LAB 2 -->
+            <div class="rstep">
+                <div class="rdot">02</div>
+                <div class="rcard">
+                    <div class="rtop">
+                        <div class="rtitle">Traversal sequences blocked with absolute path bypass
+                            <a href="https://portswigger.net/web-security/file-path-traversal/lab-absolute-path-bypass" target="_blank" rel="noopener">portswigger.net/.../lab-absolute-path-bypass</a>
+                        </div>
+                        <span class="rlevel practitioner">PRACTITIONER</span>
+                    </div>
+                    <div class="rmeta">
+                        <span>Tipo: <b>Bypass de filtro — ruta absoluta</b></span>
+                        <span>Herramienta: <b>Burp Repeater</b></span>
+                    </div>
+                    <div class="rblock">
+                        <h4>Objetivo</h4>
+                        <p>Evadir un filtro que bloquea secuencias relativas (<code>../</code>) pero no valida si la ruta recibida es absoluta.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Explicación técnica</h4>
+                        <p>El servidor detecta y elimina cualquier <code>../</code> en el input, pero no verifica si el <code>filename</code> ya viene como una ruta absoluta (empezando en <code>/</code>). Como los sistemas de archivos Unix resuelven rutas absolutas desde la raíz sin importar el directorio base configurado, basta con mandar la ruta completa del archivo objetivo.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Procedimiento</h4>
+                        <ol>
+                            <li>Interceptar y mandar a Repeater la request <code>/image?filename=N.jpg</code>.</li>
+                            <li>Sustituir el valor por una ruta absoluta directa, sin usar <code>../</code>.</li>
+                            <li>Enviar y confirmar que el filtro no la detecta como maliciosa.</li>
+                        </ol>
+                    </div>
+                    <div class="rblock">
+                        <h4>Payload</h4>
+                        <div class="payload-box">GET /image?filename=/etc/passwd HTTP/2</div>
+                        <p>Al no contener <code>../</code>, el filtro de secuencias relativas la deja pasar sin modificarla; el sistema de archivos interpreta la ruta absoluta y entrega <code>/etc/passwd</code> directamente.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Evidencias</h4>
+                        <div class="revidence">
+                            <div class="ev-card"><img src="img/lab2-burp.png" alt="Request y response del Lab 2"><div class="ev-cap">Request con ruta absoluta + Response con /etc/passwd</div></div>
+                            <div class="ev-card"><img src="img/lab2-solved.png" alt="Lab 2 resuelto"><div class="ev-cap">Confirmación "Lab solved"</div></div>
+                        </div>
+                    </div>
+                    <div class="rblock rmit" style="border-left:3px solid #2f9e5f;padding-left:12px;">
+                        <h4 style="color:#4ade80;">Mitigación</h4>
+                        <p>Rechazar cualquier input que comience con <code>/</code> o una letra de unidad (Windows), además de filtrar secuencias relativas. Mejor aún: resolver la ruta canónica final y confirmar que sigue dentro del directorio base permitido.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LAB 3 -->
+            <div class="rstep">
+                <div class="rdot">03</div>
+                <div class="rcard">
+                    <div class="rtop">
+                        <div class="rtitle">Traversal sequences stripped non-recursively
+                            <a href="https://portswigger.net/web-security/file-path-traversal/lab-sequences-stripped-non-recursively" target="_blank" rel="noopener">portswigger.net/.../lab-sequences-stripped-non-recursively</a>
+                        </div>
+                        <span class="rlevel practitioner">PRACTITIONER</span>
+                    </div>
+                    <div class="rmeta">
+                        <span>Tipo: <b>Bypass de filtro — strip no recursivo</b></span>
+                        <span>Herramienta: <b>Burp Repeater</b></span>
+                    </div>
+                    <div class="rblock">
+                        <h4>Objetivo</h4>
+                        <p>Evadir un filtro que elimina las secuencias <code>../</code> del input, pero solo aplica esa limpieza una vez (no de forma recursiva).</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Explicación técnica</h4>
+                        <p>El servidor busca y borra <code>../</code> del string una sola pasada. Si se construye un input donde, al quitar el <code>../</code> del centro, sobrevive un nuevo <code>../</code> completo, el filtro nunca lo vuelve a analizar y la secuencia maliciosa llega intacta a la capa de archivos.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Procedimiento</h4>
+                        <ol>
+                            <li>Interceptar y mandar a Repeater la request de imagen.</li>
+                            <li>Construir el payload usando <code>....//</code> en vez de <code>../</code>.</li>
+                            <li>Enviar y verificar que, tras el strip de un solo paso del servidor, el resultado sigue subiendo directorios.</li>
+                        </ol>
+                    </div>
+                    <div class="rblock">
+                        <h4>Payload</h4>
+                        <div class="payload-box">GET /image?filename=....//....//....//etc/passwd HTTP/2</div>
+                        <p>Al quitarle un <code>../</code> del centro de cada <code>....//</code>, queda exactamente <code>../</code> — como el filtro no vuelve a pasar sobre el string ya "limpio", la secuencia resultante sí funciona.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Evidencias</h4>
+                        <div class="revidence">
+                            <div class="ev-card"><img src="img/lab3-burp.png" alt="Request y response del Lab 3"><div class="ev-cap">Request con payload no recursivo + Response con /etc/passwd</div></div>
+                            <div class="ev-card"><img src="img/lab3-solved.png" alt="Lab 3 resuelto"><div class="ev-cap">Confirmación "Lab solved"</div></div>
+                        </div>
+                    </div>
+                    <div class="rblock rmit" style="border-left:3px solid #2f9e5f;padding-left:12px;">
+                        <h4 style="color:#4ade80;">Mitigación</h4>
+                        <p>Aplicar el filtrado de secuencias de forma recursiva hasta que ya no queden cambios (o mejor, evitar el enfoque de "limpiar strings" por completo y validar la ruta canónica final, que es inmune a este tipo de bypass).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LAB 4 -->
+            <div class="rstep">
+                <div class="rdot">04</div>
+                <div class="rcard">
+                    <div class="rtop">
+                        <div class="rtitle">Traversal sequences stripped with superfluous URL-decode
+                            <a href="https://portswigger.net/web-security/file-path-traversal/lab-superfluous-url-decode" target="_blank" rel="noopener">portswigger.net/.../lab-superfluous-url-decode</a>
+                        </div>
+                        <span class="rlevel practitioner">PRACTITIONER</span>
+                    </div>
+                    <div class="rmeta">
+                        <span>Tipo: <b>Bypass de filtro — doble URL-decode</b></span>
+                        <span>Herramienta: <b>Burp Repeater</b></span>
+                    </div>
+                    <div class="rblock">
+                        <h4>Objetivo</h4>
+                        <p>Evadir el filtro aprovechando que el servidor decodifica la URL dos veces en distintas capas de procesamiento.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Explicación técnica</h4>
+                        <p>El filtro revisa el input después de un primer URL-decode y no encuentra <code>../</code> literal, así que lo deja pasar. Pero el componente que finalmente abre el archivo hace un <em>segundo</em> decode, revelando la secuencia de traversal que estaba doblemente codificada desde el inicio.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Procedimiento</h4>
+                        <ol>
+                            <li>Interceptar y mandar a Repeater la request de imagen.</li>
+                            <li>Codificar <code>../</code> dos veces: <code>%2e%2e%2f</code> → <code>%252e%252e%252f</code>.</li>
+                            <li>Repetir tres veces y añadir <code>etc/passwd</code> al final.</li>
+                            <li>Enviar y confirmar la fuga de datos en el Response.</li>
+                        </ol>
+                    </div>
+                    <div class="rblock">
+                        <h4>Payload</h4>
+                        <div class="payload-box">GET /image?filename=%252e%252e%252f%252e%252e%252f%252e%252e%252fetc/passwd HTTP/2</div>
+                        <p><code>%25</code> es el código URL de <code>%</code>. Al decodificar una vez, <code>%252e</code> se vuelve <code>%2e</code> (todavía codificado, así que el filtro no ve <code>../</code>). El segundo decode, hecho por el módulo de archivos, sí lo convierte en <code>../</code> real.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Evidencias</h4>
+                        <div class="revidence">
+                            <div class="ev-card"><img src="img/lab4-burp.png" alt="Request y response del Lab 4"><div class="ev-cap">Request con doble URL-encode + Response con /etc/passwd</div></div>
+                            <div class="ev-card"><img src="img/lab4-solved.png" alt="Lab 4 resuelto"><div class="ev-cap">Confirmación "Lab solved"</div></div>
+                        </div>
+                    </div>
+                    <div class="rblock rmit" style="border-left:3px solid #2f9e5f;padding-left:12px;">
+                        <h4 style="color:#4ade80;">Mitigación</h4>
+                        <p>Decodificar la URL una única vez, en un solo punto centralizado del pipeline, antes de cualquier validación — y validar después de esa decodificación, nunca antes.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LAB 5 -->
+            <div class="rstep">
+                <div class="rdot">05</div>
+                <div class="rcard">
+                    <div class="rtop">
+                        <div class="rtitle">File path traversal, validation of start of path
+                            <a href="https://portswigger.net/web-security/file-path-traversal/lab-validate-start-of-path" target="_blank" rel="noopener">portswigger.net/.../lab-validate-start-of-path</a>
+                        </div>
+                        <span class="rlevel practitioner">PRACTITIONER</span>
+                    </div>
+                    <div class="rmeta">
+                        <span>Tipo: <b>Bypass de filtro — validación parcial</b></span>
+                        <span>Herramienta: <b>Burp Repeater</b></span>
+                    </div>
+                    <div class="rblock">
+                        <h4>Objetivo</h4>
+                        <p>Evadir una validación que solo revisa que la ruta <em>empiece</em> con el directorio permitido, sin revisar el resto del string.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Explicación técnica</h4>
+                        <p>Este endpoint recibe la ruta completa del archivo (no solo el nombre). El servidor valida que el parámetro comience con <code>/var/www/images/</code>, pero no revisa qué viene después de eso. Al cumplir el inicio requerido, se puede anexar <code>../</code> justo después para salirse del directorio de todos modos.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Procedimiento</h4>
+                        <ol>
+                            <li>Interceptar la request — aquí <code>filename</code> ya trae la ruta completa (ej. <code>/var/www/images/40.jpg</code>).</li>
+                            <li>Mandarla a Repeater.</li>
+                            <li>Conservar el prefijo <code>/var/www/images/</code> y añadir <code>../../../etc/passwd</code> justo después.</li>
+                            <li>Enviar y confirmar la fuga.</li>
+                        </ol>
+                    </div>
+                    <div class="rblock">
+                        <h4>Payload</h4>
+                        <div class="payload-box">GET /image?filename=/var/www/images/../../../etc/passwd HTTP/2</div>
+                        <p>La validación "empieza con <code>/var/www/images/</code>" se cumple literalmente; el resto del string (<code>../../../etc/passwd</code>) nunca es inspeccionado y termina resolviendo fuera del directorio permitido.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Evidencias</h4>
+                        <div class="revidence">
+                            <div class="ev-card"><img src="img/lab5-burp.png" alt="Request y response del Lab 5"><div class="ev-cap">Request con prefijo válido + traversal + Response con /etc/passwd</div></div>
+                            <div class="ev-card"><img src="img/lab5-solved.png" alt="Lab 5 resuelto"><div class="ev-cap">Confirmación "Lab solved"</div></div>
+                        </div>
+                    </div>
+                    <div class="rblock rmit" style="border-left:3px solid #2f9e5f;padding-left:12px;">
+                        <h4 style="color:#4ade80;">Mitigación</h4>
+                        <p>No basta con validar el prefijo de un string. Hay que resolver la ruta canónica completa (eliminando <code>../</code>, symlinks, etc.) y validar <em>esa</em> ruta final contra el directorio permitido.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LAB 6 -->
+            <div class="rstep">
+                <div class="rdot">06</div>
+                <div class="rcard">
+                    <div class="rtop">
+                        <div class="rtitle">File path traversal, validation of file extension with null byte bypass
+                            <a href="https://portswigger.net/web-security/file-path-traversal/lab-validate-file-extension-null-byte-bypass" target="_blank" rel="noopener">portswigger.net/.../lab-validate-file-extension-null-byte-bypass</a>
+                        </div>
+                        <span class="rlevel expert">EXPERT</span>
+                    </div>
+                    <div class="rmeta">
+                        <span>Tipo: <b>Bypass de filtro — byte nulo</b></span>
+                        <span>Herramienta: <b>Burp Repeater</b></span>
+                    </div>
+                    <div class="rblock">
+                        <h4>Objetivo</h4>
+                        <p>Evadir una validación que exige que el nombre de archivo termine en una extensión específica (<code>.jpg</code>/<code>.png</code>), usando un byte nulo para truncar la ruta antes de esa extensión.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Explicación técnica</h4>
+                        <p>La aplicación verifica que el string de <code>filename</code> termine textualmente en la extensión esperada — pero eso ocurre a nivel de comparación de strings, antes de que el sistema operativo abra el archivo. Los sistemas de archivos basados en C interpretan el byte nulo (<code>%00</code>) como terminador de cadena: todo lo que viene después de <code>%00</code> se ignora al momento de abrir el archivo, aunque la validación de string sí lo haya "visto" completo.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Procedimiento</h4>
+                        <ol>
+                            <li>Interceptar y mandar a Repeater la request de imagen.</li>
+                            <li>Construir el payload de traversal y anexar <code>%00</code> seguido de la extensión esperada.</li>
+                            <li>Enviar — la validación de extensión pasa (termina en la extensión correcta como string), pero el sistema abre el archivo real antes del byte nulo.</li>
+                        </ol>
+                    </div>
+                    <div class="rblock">
+                        <h4>Payload</h4>
+                        <div class="payload-box">GET /image?filename=../../../etc/passwd%00.jpg HTTP/2</div>
+                        <p>Para la validación de string, el filename "termina en <code>.jpg</code>" ✓. Para el sistema de archivos, la cadena real que se abre se corta en el byte nulo: <code>../../../etc/passwd</code>. Ambas capas interpretan el mismo string de forma distinta, y esa discrepancia es la vulnerabilidad.</p>
+                    </div>
+                    <div class="rblock">
+                        <h4>Evidencias</h4>
+                        <div class="revidence">
+                            <div class="ev-card"><img src="img/lab6-burp.png" alt="Request y response del Lab 6"><div class="ev-cap">Request con byte nulo + Response con /etc/passwd</div></div>
+                            <div class="ev-card"><img src="img/lab6-solved.png" alt="Lab 6 resuelto"><div class="ev-cap">Confirmación "Lab solved"</div></div>
+                        </div>
+                    </div>
+                    <div class="rblock rmit" style="border-left:3px solid #2f9e5f;padding-left:12px;">
+                        <h4 style="color:#4ade80;">Mitigación</h4>
+                        <p>Actualizar a versiones de lenguaje/runtime que rechacen bytes nulos en rutas de archivo (la mayoría de los stacks modernos ya lo hacen), y nunca confiar en validaciones de extensión basadas solo en comparación de strings — validar también el tipo real del archivo (magic bytes) y la ruta canónica.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ══════════════════ CÓMO PREVENIR ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-shield-halved"></i> Cómo prevenir Path Traversal (en general)</h2>
+        <p>La forma más efectiva de prevenir esta familia de vulnerabilidades es evitar pasarle a las APIs del sistema de archivos cualquier entrada proporcionada por el usuario sin procesar. La técnica más robusta es la <strong>verificación de ruta canónica</strong>: resolver la ruta real y "limpia" (después de que el sistema operativo elimina <code>../</code>, <code>./</code>, symlinks y codificaciones raras) y validar que esa ruta final siga dentro del directorio base permitido — nunca validar el string crudo antes de resolverlo.</p>
+        <div class="code-window">
+            <div class="code-bar"><i class="fas fa-code"></i> ejemplo — validación con ruta canónica (Java)</div>
+            <div class="code-body"><pre><code>File file = new File(BASE_DIRECTORY, userInput);
+if (file.getCanonicalPath().startsWith(BASE_DIRECTORY)) {
+    // seguro: la ruta resuelta sigue dentro del directorio permitido
+} else {
+    // rechazar la petición
+}</code></pre></div>
+        </div>
+        <div class="obj-grid" style="margin-top:16px;">
+            <div class="obj-card"><i class="fas fa-list-check"></i>Preferir whitelists de identificadores/nombres de archivo permitidos en vez de intentar "limpiar" strings.</div>
+            <div class="obj-card"><i class="fas fa-code-branch"></i>Aplicar cualquier filtrado de forma recursiva, no en una sola pasada.</div>
+            <div class="obj-card"><i class="fas fa-lock"></i>Ejecutar el proceso con el mínimo privilegio posible, limitando qué archivos puede leer aunque el filtro falle.</div>
+            <div class="obj-card"><i class="fas fa-vial"></i>Probar cada validación contra rutas absolutas, doble-encoding y bytes nulos — no solo contra <code>../</code> literal.</div>
+        </div>
+    </section>
+
+    <!-- ══════════════════ CONCLUSIÓN ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> Conclusión</h2>
+        <div class="concl-box">
+            <h3>// APRENDIZAJES</h3>
+            <p>Los 6 laboratorios muestran algo importante: casi ningún filtro anti-traversal falla porque esté "mal escrito" en un sentido obvio — falla porque valida el string equivocado, en el momento equivocado, o de una forma que no coincide con cómo el sistema de archivos interpreta esa misma cadena después. Ruta absoluta, doble codificación, strip no recursivo, validación de solo el inicio, y byte nulo son, en el fondo, la misma lección repetida: <strong>nunca confiar en la validación de un string crudo; siempre resolver y validar la ruta canónica final.</strong></p>
+            <p>Burp Suite (Proxy + Repeater) resultó indispensable para interceptar la petición real que el navegador arma automáticamente, editar el parámetro exacto sin romper el resto de headers, y reenviarla las veces necesarias hasta dar con el payload correcto — mucho más rápido y confiable que intentar construir la URL a mano.</p>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>Tristán Rivera Magdalena Yesenia – 174702</p>
+</footer>
+
+<script src="matrix.js"></script>
+</body>
+</html>
