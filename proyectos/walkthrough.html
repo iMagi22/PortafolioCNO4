@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PR01 — De la Teoría a la Práctica: Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+:root{
+  --g:#b388ff;--gd:#8b5cf6;--gdim:#9a8cc2;
+  --bg:#0a0714;--cbg:#0d0a1a;
+  --bdr:#b388ff30;--bdrb:#b388ffaa;
+  --txt:#d9d0ff;--dim:#9a8cc2;
+  --alert:#ff5f7a;--warn:#ffaa00;--info:#3b9dff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--txt);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden;line-height:1.7;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(to bottom,transparent 0,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);z-index:1;pointer-events:none;}
+#mc{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.05;pointer-events:none;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--gd);border-radius:3px;}
+
+/* HEADER */
+header{
+  position:relative;z-index:2;text-align:center;
+  padding:50px 20px 38px;border-bottom:1px solid var(--bdrb);
+  background:linear-gradient(180deg,rgba(179,136,255,.06) 0%,transparent 100%);
+  overflow:hidden;
+}
+header::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--g),var(--info),transparent);animation:scan 3s linear infinite;}
+@keyframes scan{0%{left:-100%;}100%{left:100%;}}
+@keyframes flicker{0%,95%,100%{opacity:1;}96%{opacity:.7;}98%{opacity:.5;}99%{opacity:1;}}
+
+.h-eyebrow{font-size:10px;color:var(--dim);letter-spacing:4px;text-transform:uppercase;margin-bottom:10px;}
+header h1{font-family:'Orbitron',sans-serif;font-size:clamp(20px,3.5vw,38px);font-weight:900;background:linear-gradient(90deg,var(--g),var(--info));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:4px;filter:drop-shadow(0 0 14px rgba(179,136,255,.4));animation:flicker 8s infinite;margin-bottom:8px;}
+.h-sub{font-family:'Orbitron',sans-serif;font-size:clamp(10px,1.4vw,13px);color:var(--gd);letter-spacing:3px;margin-bottom:4px;}
+.blink{animation:blink 1s infinite;color:var(--g);}
+@keyframes blink{0%,50%{opacity:1;}51%,100%{opacity:0;}}
+
+/* STATS BAR */
+.stats-bar{position:relative;z-index:2;display:flex;max-width:820px;margin:22px auto 0;border:1px solid var(--bdrb);border-radius:3px;overflow:hidden;}
+.sb-item{flex:1;padding:13px 8px;text-align:center;border-right:1px solid var(--bdr);background:var(--cbg);}
+.sb-item:last-child{border-right:none;}
+.sb-val{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:var(--g);}
+.sb-lbl{font-size:8px;color:var(--dim);letter-spacing:1.5px;margin-top:3px;text-transform:uppercase;}
+
+/* META BOX */
+.meta-box{
+  position:relative;z-index:2;max-width:820px;margin:26px auto;
+  background:var(--cbg);border:1px solid var(--bdrb);border-radius:4px;padding:20px 26px;
+}
+.meta-box::after{content:'';position:absolute;top:-1px;right:-1px;width:12px;height:12px;border-top:2px solid var(--g);border-right:2px solid var(--g);}
+.meta-row{font-size:12px;color:var(--dim);line-height:2.2;border-bottom:1px solid var(--bdr);padding-bottom:5px;margin-bottom:5px;}
+.meta-row:last-child{border-bottom:none;margin-bottom:0;}
+.meta-row strong{color:var(--g);}
+
+/* ACTIONS */
+.actions{position:relative;z-index:2;display:flex;gap:10px;flex-wrap:wrap;max-width:1100px;margin:0 auto 24px;padding:0 20px;}
+.btn-back{display:inline-flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;padding:9px 16px;border-radius:2px;transition:all .22s;color:var(--dim);border:1px solid var(--bdr);background:transparent;}
+.btn-back:hover{color:var(--g);border-color:var(--g);}
+
+/* NAV TABS */
+.nav-wrap{position:relative;z-index:2;max-width:1100px;margin:0 auto 26px;display:flex;flex-wrap:wrap;gap:8px;padding:0 20px;}
+.nb{background:var(--cbg);border:1px solid var(--bdr);color:var(--dim);padding:9px 16px;border-radius:2px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1.5px;transition:all .22s;}
+.nb:hover,.nb.active{color:#0a0714;background:var(--g);border-color:var(--g);box-shadow:0 0 12px rgba(179,136,255,.3);}
+
+/* MAIN */
+main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:0 20px 80px;}
+.sec{display:none;}
+.sec.active{display:block;animation:fadeIn .4s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* WINDOW */
+.win{background:var(--cbg);border:1px solid var(--bdr);border-radius:4px;margin-bottom:28px;overflow:hidden;position:relative;transition:border-color .3s,box-shadow .3s;}
+.win::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.3;}
+.win::after{content:'';position:absolute;top:-1px;right:-1px;width:12px;height:12px;border-top:2px solid var(--g);border-right:2px solid var(--g);}
+.win:hover{border-color:var(--bdrb);box-shadow:0 0 20px rgba(179,136,255,.07);}
+.wbar{background:rgba(18,10,32,.95);padding:9px 14px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--bdr);}
+.wd{width:12px;height:12px;border-radius:50%;display:inline-block;}
+.wr{background:#ff5f56;box-shadow:0 0 4px #ff5f56;}.wy{background:#ffbd2e;box-shadow:0 0 4px #ffbd2e;}.wg{background:#27c93f;box-shadow:0 0 4px #27c93f;}
+.wt{font-size:9px;color:var(--dim);letter-spacing:2px;margin-left:6px;font-family:'Orbitron',sans-serif;}
+.cnt{padding:26px;}
+
+/* TYPOGRAPHY */
+h2{font-family:'Orbitron',sans-serif;color:var(--g);font-size:clamp(13px,1.7vw,16px);font-weight:700;letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:9px;border-left:4px solid var(--g);padding-left:13px;text-transform:uppercase;text-shadow:0 0 10px rgba(179,136,255,.25);}
+h3{color:var(--gd);margin:20px 0 9px;font-size:11.5px;font-family:'Orbitron',sans-serif;letter-spacing:1.5px;}
+h4{color:var(--g);font-size:11px;letter-spacing:1px;margin-bottom:7px;}
+p{font-size:12.5px;color:var(--txt);line-height:1.9;margin-bottom:10px;}
+strong{color:#dff;}
+code{background:rgba(179,136,255,.08);color:var(--g);padding:1px 6px;border-radius:2px;font-size:11.5px;font-family:'Share Tech Mono',monospace;border:1px solid var(--bdr);}
+a{color:var(--g);}
+
+/* LIST */
+ul.cl{margin-left:18px;line-height:2.2;}
+ul.cl li{position:relative;padding-left:14px;font-size:12px;color:var(--txt);}
+ul.cl li::before{content:'▸';position:absolute;left:0;color:var(--g);}
+
+/* BOXES */
+.hbox{background:rgba(179,136,255,.04);border-left:3px solid var(--g);padding:14px 18px;margin:12px 0;border-radius:0 3px 3px 0;}
+.ibox{background:rgba(59,157,255,.04);border:1px solid rgba(59,157,255,.25);border-radius:3px;padding:14px 18px;margin:12px 0;}
+.ibox h4{color:var(--info);}
+.wbox{background:rgba(255,170,0,.04);border:1px solid rgba(255,170,0,.3);border-radius:3px;padding:14px 18px;margin:12px 0;}
+.wbox h4{color:var(--warn);}
+
+/* VIDEO EMBED */
+.video-wrap{
+  position:relative;width:100%;padding-bottom:56.25%;
+  border-radius:3px;overflow:hidden;margin:16px 0;
+  border:1px solid var(--bdrb);
+  box-shadow:0 0 30px rgba(179,136,255,.15);
+}
+.video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+.video-label{
+  font-size:9.5px;color:var(--dim);letter-spacing:2px;
+  text-align:center;padding:8px;background:rgba(0,0,0,.4);
+  border-top:1px solid var(--bdr);
+}
+
+/* URL BOX */
+.url-box{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(0,0,0,.4);border:1px solid var(--bdrb);
+  border-radius:3px;padding:12px 16px;margin:12px 0;
+  word-break:break-all;
+}
+.url-box span{font-size:10px;color:var(--dim);letter-spacing:1px;white-space:nowrap;}
+.url-box a{font-size:11.5px;color:var(--g);}
+
+/* PHASES */
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:16px 0;}
+.phase{background:rgba(18,10,32,.5);border:1px solid var(--bdr);border-radius:3px;padding:14px;position:relative;transition:all .25s;}
+.phase:hover{border-color:var(--g);box-shadow:0 0 12px rgba(179,136,255,.1);transform:translateY(-2px);}
+.phase-num{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:900;color:rgba(179,136,255,.12);position:absolute;top:7px;right:10px;}
+.phase h4{color:var(--g);font-size:10px;letter-spacing:1.5px;margin-bottom:6px;}
+.phase p{font-size:11px;color:var(--dim);line-height:1.8;margin:0;}
+.phase .tool{display:inline-block;font-size:9px;background:rgba(179,136,255,.06);border:1px solid var(--bdr);color:var(--gdim);padding:1px 7px;border-radius:2px;margin-top:6px;margin-right:3px;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:11.5px;border:1px solid var(--bdr);}
+th,td{border:1px solid var(--bdr);padding:10px 13px;text-align:left;vertical-align:top;}
+th{background:rgba(45,25,80,.7);color:var(--g);font-family:'Orbitron',sans-serif;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;}
+tr:nth-child(even){background:rgba(179,136,255,.02);}
+tr:hover{background:rgba(179,136,255,.05);}
+
+/* TOOLS GRID */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:14px 0;}
+.tool-card{background:rgba(18,10,32,.5);border:1px solid var(--bdr);border-radius:3px;padding:14px;text-align:center;transition:all .25s;}
+.tool-card:hover{border-color:var(--g);background:rgba(179,136,255,.05);transform:translateY(-2px);}
+.tool-card .icon{font-size:1.8rem;margin-bottom:8px;}
+.tool-card h5{font-size:10px;color:var(--g);letter-spacing:1px;margin-bottom:4px;}
+.tool-card p{font-size:10px;color:var(--dim);margin:0;line-height:1.5;}
+
+/* PAYLOAD */
+.payload{background:#020a05;border:1px solid var(--bdrb);border-radius:3px;padding:13px 16px;margin:12px 0;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--g);line-height:1.9;overflow-x:auto;box-shadow:inset 0 0 16px rgba(179,136,255,.04);}
+.payload .cm{color:var(--gdim);}
+.payload .kw{color:var(--info);}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:28px;margin:16px 0;}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--g),transparent);}
+.tl-item{position:relative;margin-bottom:20px;}
+.tl-item::before{content:'';position:absolute;left:-24px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--cbg);border:2px solid var(--g);box-shadow:0 0 6px var(--g);}
+.tl-item h4{color:var(--g);font-size:11px;letter-spacing:1px;margin-bottom:4px;}
+.tl-item p{font-size:11.5px;color:var(--dim);margin:0;line-height:1.7;}
+
+/* FOOTER */
+footer{position:relative;z-index:2;text-align:center;padding:20px;border-top:1px solid var(--bdr);color:var(--dim);font-size:11px;letter-spacing:2px;background:linear-gradient(0deg,rgba(179,136,255,.03) 0%,transparent 100%);}
+footer span{color:var(--gd);}
+
+@media(max-width:700px){.phases{grid-template-columns:1fr 1fr;}.tools-grid{grid-template-columns:repeat(3,1fr);}.cnt{padding:14px;}}
+</style>
+</head>
+<body>
+<canvas id="mc"></canvas>
+
+<header>
+  <div class="h-eyebrow">CNO IV · Programación WAP · Proyecto 01 · Parcial 1</div>
+  <h1>DE LA TEORÍA A LA PRÁCTICA</h1>
+  <div class="h-sub">Walkthrough en Acción — Guía y Video</div>
+  <div class="blink" style="margin-top:6px;">_</div>
+</header>
+
+<div class="meta-box">
+  <div class="meta-row"><strong>Proyecto:</strong> PR01 — De la Teoría a la Práctica: Walkthrough en Acción (Guía y Video)</div>
+  <div class="meta-row"><strong>Asignatura:</strong> CNO IV — Programación WAP &nbsp;|&nbsp; <strong>Parcial:</strong> 1</div>
+  <div class="meta-row"><strong>Alumna:</strong> Magdalena Yesenia Tristán Rivera — 174702 &nbsp;|&nbsp; <strong>Grupo:</strong> T37A</div>
+  <div class="meta-row"><strong>Docente:</strong> Mtro. Servando López Contreras</div>
+  <div class="meta-row"><strong>Duración estimada:</strong> Aproximadamente 07 horas &nbsp;|&nbsp; <strong>Máquina objetivo:</strong> SnakeOil — VulnHub</div>
+</div>
+
+<div class="stats-bar">
+  <div class="sb-item"><div class="sb-val">6</div><div class="sb-lbl">Fases</div></div>
+  <div class="sb-item"><div class="sb-val">9</div><div class="sb-lbl">Herramientas</div></div>
+  <div class="sb-item"><div class="sb-val" style="color:var(--info);">SnakeOil</div><div class="sb-lbl">VM objetivo</div></div>
+  <div class="sb-item"><div class="sb-val" style="color:#7ee787;">ROOT ✓</div><div class="sb-lbl">Resultado</div></div>
+</div>
+
+<div class="actions">
+  <a class="btn-back" href="../index.html"><i class="fas fa-house"></i> Inicio</a>
+  <a class="btn-back" href="proyectos.html"><i class="fas fa-arrow-left"></i> Proyectos</a>
+</div>
+
+<div class="nav-wrap">
+  <button class="nb active" onclick="show('overview',this)">◈ Resumen</button>
+  <button class="nb" onclick="show('objetivos',this)">⚑ Objetivos</button>
+  <button class="nb" onclick="show('metodologia',this)">▦ Metodología</button>
+  <button class="nb" onclick="show('herramientas',this)">◆ Herramientas</button>
+  <button class="nb" onclick="show('video',this)">▶ Video Walkthrough</button>
+  <button class="nb" onclick="show('maquina',this)">⊕ Máquina Virtual</button>
+</div>
+
+<main>
+
+<!-- ══ RESUMEN ══ -->
+<div id="section-overview" class="sec active">
+
+  <div class="win">
+    <div class="wbar"><span class="wd wr"></span><span class="wd wy"></span><span class="wd wg"></span><span class="wt">RESUMEN DEL PROYECTO</span></div>
+    <div class="cnt">
+      <h2>◈ Descripción General</h2>
+      <p>Este proyecto documenta de forma integral el proceso de <strong>pentesting ético</strong> aplicado sobre una máquina virtual vulnerable, llevando la teoría de la seguridad informática a un escenario práctico real. A lo largo del walkthrough se cubren todas las fases del ciclo de ataque: reconocimiento, escaneo, enumeración, explotación y post-explotación.</p>
+      <p>La máquina objetivo seleccionada es <strong>SnakeOil</strong> de la plataforma VulnHub — un entorno diseñado para practicar técnicas reales de pentesting en un ambiente controlado y aislado. Todo el proceso fue grabado en video y documentado paso a paso con comandos, resultados y capturas de pantalla.</p>
+
+      <h3>Fases del Proyecto</h3>
+      <div class="phases">
+        <div class="phase">
+          <div class="phase-num">01</div>
+          <h4>Preparación del Entorno</h4>
+          <p>Configuración de la máquina virtual aislada. Importación de SnakeOil en VirtualBox/VMware. Verificación de red interna.</p>
+          <span class="tool">VirtualBox</span><span class="tool">VMware</span>
+        </div>
+        <div class="phase">
+          <div class="phase-num">02</div>
+          <h4>Reconocimiento</h4>
+          <p>Descubrimiento del objetivo en la red. Identificación de la IP de la máquina víctima mediante ARP scan.</p>
+          <span class="tool">netdiscover</span><span class="tool">arp-scan</span>
+        </div>
+        <div class="phase">
+          <div class="phase-num">03</div>
+          <h4>Escaneo y Enumeración</h4>
+          <p>Escaneo de puertos abiertos, servicios en ejecución y versiones. Identificación de vectores de ataque potenciales.</p>
+          <span class="tool">nmap</span><span class="tool">nikto</span>
+        </div>
+        <div class="phase">
+          <div class="phase-num">04</div>
+          <h4>Análisis de Vulnerabilidades</h4>
+          <p>Investigación de vulnerabilidades conocidas asociadas a los servicios descubiertos. Evaluación del riesgo y viabilidad de explotación.</p>
+          <span class="tool">searchsploit</span><span class="tool">CVE</span>
+        </div>
+        <div class="phase">
+          <div class="phase-num">05</div>
+          <h4>Explotación</h4>
+          <p>Selección y adaptación de exploits. Obtención de acceso inicial al sistema objetivo. Ejecución del vector de ataque identificado.</p>
+          <span class="tool">Metasploit</span><span class="tool">exploits</span>
+        </div>
+        <div class="phase">
+          <div class="phase-num">06</div>
+          <h4>Post-Explotación</h4>
+          <p>Demostración del control del sistema. Escalada de privilegios para obtener acceso root/administrador. Establecimiento de persistencia.</p>
+          <span class="tool">LinPEAS</span><span class="tool">sudo -l</span>
+        </div>
+      </div>
+
+      <div class="hbox">
+        <h4>⚑ Resultado del Proyecto</h4>
+        <p>Máquina <strong>SnakeOil comprometida exitosamente</strong>. Se obtuvo acceso root mediante la explotación de vulnerabilidades identificadas durante la fase de enumeración. Todo el proceso fue documentado con capturas de pantalla y grabado en video explicativo disponible en YouTube.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="win">
+    <div class="wbar"><span class="wd wr"></span><span class="wd wy"></span><span class="wd wg"></span><span class="wt">MARCO TEÓRICO</span></div>
+    <div class="cnt">
+      <h2>▦ Fundamentos Teóricos</h2>
+      <p>El proyecto conecta los conceptos teóricos de la seguridad informática con su aplicación práctica en un entorno de pentesting real. Los fundamentos abordados incluyen:</p>
+
+      <h3>Modelo de Amenazas y Metodología de Pentesting</h3>
+      <p>El pentesting o prueba de penetración es un proceso sistemático y autorizado que simula el comportamiento de un atacante real para identificar vulnerabilidades antes de que sean explotadas de forma maliciosa. La metodología seguida en este proyecto se basa en el estándar <strong>PTES (Penetration Testing Execution Standard)</strong> y las fases de <strong>CEH (Certified Ethical Hacker)</strong>.</p>
+
+      <table>
+        <thead><tr><th>Fase</th><th>Objetivo</th><th>Herramientas usadas</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Reconocimiento</strong></td><td>Descubrir la IP del objetivo en la red local</td><td><code>netdiscover</code>, <code>arp-scan</code></td><td>Dirección IP del objetivo</td></tr>
+          <tr><td><strong>Escaneo</strong></td><td>Identificar puertos abiertos y servicios</td><td><code>nmap -sV -sC -A</code></td><td>Mapa de servicios y versiones</td></tr>
+          <tr><td><strong>Enumeración</strong></td><td>Extraer información detallada de servicios</td><td><code>nikto</code>, <code>gobuster</code>, <code>enum4linux</code></td><td>Vectores de ataque específicos</td></tr>
+          <tr><td><strong>Análisis</strong></td><td>Evaluar vulnerabilidades conocidas</td><td><code>searchsploit</code>, NVD, CVE</td><td>Lista de exploits aplicables</td></tr>
+          <tr><td><strong>Explotación</strong></td><td>Ejecutar el ataque y ganar acceso</td><td><code>Metasploit</code>, exploits manuales</td><td>Shell en el sistema objetivo</td></tr>
+          <tr><td><strong>Post-explotación</strong></td><td>Escalar privilegios y demostrar control</td><td><code>LinPEAS</code>, <code>sudo -l</code>, SUID</td><td>Acceso root confirmado</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Conceptos Clave</h3>
+      <div class="ibox">
+        <h4>◈ ¿Qué es un Walkthrough?</h4>
+        <p>Un <strong>walkthrough</strong> en el contexto de ciberseguridad es una documentación paso a paso del proceso completo de comprometer una máquina vulnerable. Incluye comandos exactos utilizados, explicación de cada técnica aplicada, capturas de pantalla como evidencia y reflexión sobre qué conceptos teóricos sustenta cada paso. Es la metodología estándar para aprender pentesting de forma estructurada.</p>
+      </div>
+      <div class="ibox">
+        <h4>◈ Virtualización Aislada</h4>
+        <p>La práctica de pentesting requiere un <strong>entorno aislado</strong> para evitar daño a sistemas reales. Mediante VirtualBox o VMware se crea una red interna donde solo la máquina atacante (Kali Linux) y la máquina víctima (SnakeOil) pueden comunicarse, sin acceso a internet ni a la red real del practicante.</p>
+      </div>
+      <div class="wbox">
+        <h4>⚠ Ética y Legalidad</h4>
+        <p>Todo el trabajo se realizó sobre máquinas diseñadas específicamente para ser vulneradas (VulnHub). El pentesting sin autorización explícita sobre sistemas reales es un delito. Este proyecto tiene únicamente finalidad académica y educativa, siguiendo los principios del <strong>hacking ético</strong>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ OBJETIVOS ══ -->
+<div id="section-objetivos" class="sec">
+  <div class="win">
+    <div class="wbar"><span class="wd wr"></span><span class="wd wy"></span><span class="wd wg"></span><span class="wt">OBJETIVOS DEL PROYECTO</span></div>
+    <div class="cnt">
+      <h2>⚑ Objetivo General</h2>
+      <div class="hbox">
+        <p>Demostrar la capacidad de aplicar conocimientos teóricos de seguridad informática en un entorno práctico, mediante la realización de un walkthrough detallado y la explicación de las técnicas y metodologías utilizadas para vulnerar una máquina virtual.</p>
+      </div>
+
+      <h3>Objetivos Específicos</h3>
+      <div class="timeline">
+        <div class="tl-item">
+          <h4>Configurar entorno de virtualización aislado</h4>
+          <p>Preparar un entorno de pruebas seguro, seleccionando y configurando una máquina virtual vulnerable adecuada para realizar las pruebas de penetración de forma segura y controlada.</p>
+        </div>
+        <div class="tl-item">
+          <h4>Realizar reconocimiento exhaustivo</h4>
+          <p>Escanear y enumerar los servicios en ejecución del sistema objetivo para identificar posibles vectores de ataque utilizando herramientas de escaneo de puertos y servicios.</p>
+        </div>
+        <div class="tl-item">
+          <h4>Enumerar servicios y aplicaciones</h4>
+          <p>Obtener información detallada sobre el sistema objetivo, identificando versiones, configuraciones y posibles vulnerabilidades en los servicios descubiertos.</p>
+        </div>
+        <div class="tl-item">
+          <h4>Investigar vulnerabilidades conocidas</h4>
+          <p>Analizar las vulnerabilidades presentes en el sistema, investigando las vulnerabilidades conocidas y evaluando el riesgo de su explotación mediante bases de datos como CVE y Exploit-DB.</p>
+        </div>
+        <div class="tl-item">
+          <h4>Evaluar riesgo y viabilidad</h4>
+          <p>Evaluar el riesgo y la viabilidad de explotar cada vulnerabilidad identificada, priorizando los vectores de mayor impacto.</p>
+        </div>
+        <div class="tl-item">
+          <h4>Seleccionar y adaptar exploits</h4>
+          <p>Seleccionar y adaptar los exploits adecuados para las vulnerabilidades encontradas, ajustando parámetros según las especificidades del entorno objetivo.</p>
+        </div>
+        <div class="tl-item">
+          <h4>Escalar privilegios</h4>
+          <p>Obtener acceso administrativo completo (root) al sistema objetivo, demostrando el impacto real de la vulnerabilidad explotada.</p>
+        </div>
+        <div class="tl-item">
+          <h4>Documentar el proceso completo</h4>
+          <p>Registrar cada paso del proceso, incluyendo comandos utilizados, resultados obtenidos y capturas de pantalla como evidencia del ataque.</p>
+        </div>
+        <div class="tl-item">
+          <h4>Grabar y explicar el video</h4>
+          <p>Grabar un video de la pantalla durante el proceso de ataque, explicando cada paso con lenguaje claro y conciso, relacionando las técnicas con los fundamentos teóricos de seguridad informática.</p>
+        </div>
+        <div class="tl-item">
+          <h4>Definir términos técnicos</h4>
+          <p>Definir y explicar los términos técnicos utilizados durante el walkthrough para garantizar la comprensión integral del proceso.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ METODOLOGÍA ══ -->
+<div id="section-metodologia" class="sec">
+  <div class="win">
+    <div class="wbar"><span class="wd wr"></span><span class="wd wy"></span><span class="wd wg"></span><span class="wt">METODOLOGÍA Y PROCEDIMIENTO</span></div>
+    <div class="cnt">
+      <h2>▦ Procedimiento Detallado</h2>
+      <p>El proyecto buscó, en primer lugar, preparar un entorno de pruebas seguro, seleccionando y configurando una máquina virtual vulnerable adecuada. Se realizó un reconocimiento exhaustivo del sistema objetivo, escaneando y enumerando los servicios en ejecución para identificar posibles vectores de ataque.</p>
+
+      <h3>Fase 1 — Preparación y Reconocimiento</h3>
+      <div class="payload">
+<span class="cm"># Descubrir la IP de la máquina objetivo en la red</span>
+sudo netdiscover -r 192.168.x.0/24
+
+<span class="cm"># Alternativa con arp-scan</span>
+sudo arp-scan --localnet</div>
+
+      <h3>Fase 2 — Escaneo de Puertos y Servicios</h3>
+      <div class="payload">
+<span class="cm"># Escaneo completo con detección de versiones y scripts</span>
+nmap -sV -sC -A -p- &lt;IP_OBJETIVO&gt;
+
+<span class="cm"># Escaneo rápido de puertos más comunes</span>
+nmap -sV --open -p 21,22,80,443,8080,8443,3306 &lt;IP_OBJETIVO&gt;
+
+<span class="cm"># Escaneo web con Nikto</span>
+nikto -h http://&lt;IP_OBJETIVO&gt;</div>
+
+      <h3>Fase 3 — Enumeración Web</h3>
+      <div class="payload">
+<span class="cm"># Fuerza bruta de directorios</span>
+gobuster dir -u http://&lt;IP_OBJETIVO&gt; -w /usr/share/wordlists/dirb/common.txt
+
+<span class="cm"># Enumeración de archivos y extensiones</span>
+gobuster dir -u http://&lt;IP_OBJETIVO&gt; -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,txt,html,bak</div>
+
+      <h3>Fase 4 — Análisis de Vulnerabilidades</h3>
+      <div class="payload">
+<span class="cm"># Buscar exploits por servicio/versión</span>
+searchsploit &lt;nombre_servicio&gt; &lt;versión&gt;
+
+<span class="cm"># Copiar exploit al directorio de trabajo</span>
+searchsploit -m &lt;exploit_id&gt;</div>
+
+      <h3>Fase 5 — Explotación</h3>
+      <div class="payload">
+<span class="cm"># Iniciar Metasploit Framework</span>
+msfconsole
+
+<span class="cm"># Buscar módulo de exploit</span>
+search &lt;vulnerabilidad&gt;
+use &lt;número_de_módulo&gt;
+show options
+set RHOSTS &lt;IP_OBJETIVO&gt;
+set LHOST &lt;IP_KALI&gt;
+exploit</div>
+
+      <h3>Fase 6 — Post-Explotación y Escalada de Privilegios</h3>
+      <div class="payload">
+<span class="cm"># Verificar usuario actual</span>
+whoami && id
+
+<span class="cm"># Verificar permisos sudo</span>
+sudo -l
+
+<span class="cm"># Buscar binarios SUID</span>
+find / -perm -u=s -type f 2>/dev/null
+
+<span class="cm"># Ejecutar LinPEAS para enumeración automática</span>
+curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh
+
+<span class="cm"># Obtener shell root</span>
+sudo su
+whoami  <span class="cm"># → root ✓</span></div>
+
+      <div class="hbox">
+        <h4>⚑ Impacto Demostrado</h4>
+        <p>Una vez obtenida la shell root se demostró control total sobre el sistema: lectura de archivos sensibles (<code>/etc/shadow</code>, flags), establecimiento de persistencia mediante backdoors y evidencia de la escalada completa de privilegios desde usuario no privilegiado hasta administrador del sistema.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HERRAMIENTAS ══ -->
+<div id="section-herramientas" class="sec">
+  <div class="win">
+    <div class="wbar"><span class="wd wr"></span><span class="wd wy"></span><span class="wd wg"></span><span class="wt">HERRAMIENTAS UTILIZADAS</span></div>
+    <div class="cnt">
+      <h2>◆ Arsenal de Herramientas</h2>
+      <p>El walkthrough fue realizado íntegramente desde <strong>Kali Linux</strong>, la distribución de Linux diseñada para pentesting, utilizando las siguientes herramientas:</p>
+
+      <div class="tools-grid">
+        <div class="tool-card"><div class="icon">🔍</div><h5>nmap</h5><p>Escaneo de puertos, detección de servicios y versiones</p></div>
+        <div class="tool-card"><div class="icon">🌐</div><h5>nikto</h5><p>Escáner de vulnerabilidades web automatizado</p></div>
+        <div class="tool-card"><div class="icon">📁</div><h5>gobuster</h5><p>Fuerza bruta de directorios y archivos web</p></div>
+        <div class="tool-card"><div class="icon">🔎</div><h5>searchsploit</h5><p>Búsqueda en Exploit-DB de exploits por servicio</p></div>
+        <div class="tool-card"><div class="icon">⚡</div><h5>Metasploit</h5><p>Framework de explotación modular y automatizado</p></div>
+        <div class="tool-card"><div class="icon">🕵</div><h5>netdiscover</h5><p>Descubrimiento de hosts activos en la red local</p></div>
+        <div class="tool-card"><div class="icon">🐧</div><h5>LinPEAS</h5><p>Enumeración automática de privesc en Linux</p></div>
+        <div class="tool-card"><div class="icon">🖥</div><h5>VirtualBox</h5><p>Hipervisor para entorno de virtualización aislado</p></div>
+        <div class="tool-card"><div class="icon">🎥</div><h5>OBS Studio</h5><p>Grabación del video walkthrough en pantalla</p></div>
+      </div>
+
+      <h3>Entorno de Trabajo</h3>
+      <table>
+        <thead><tr><th>Componente</th><th>Detalle</th><th>Rol</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sistema Atacante</strong></td><td>Kali Linux 2024 (VM)</td><td>Máquina del pentester con todas las herramientas</td></tr>
+          <tr><td><strong>Sistema Objetivo</strong></td><td>SnakeOil — VulnHub</td><td>Máquina vulnerable a comprometer</td></tr>
+          <tr><td><strong>Red</strong></td><td>Host-Only / Red Interna</td><td>Aislamiento total del entorno de pruebas</td></tr>
+          <tr><td><strong>Hipervisor</strong></td><td>VirtualBox / VMware</td><td>Plataforma de virtualización</td></tr>
+          <tr><td><strong>Documentación</strong></td><td>Capturas + Video YouTube</td><td>Evidencia del proceso completo</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIDEO ══ -->
+<div id="section-video" class="sec">
+  <div class="win">
+    <div class="wbar"><span class="wd wr"></span><span class="wd wy"></span><span class="wd wg"></span><span class="wt">VIDEO WALKTHROUGH</span></div>
+    <div class="cnt">
+      <h2>▶ Video — Walkthrough Completo</h2>
+      <p>El siguiente video documenta el proceso completo de pentesting sobre la máquina <strong>SnakeOil</strong>, cubriendo todas las fases desde el reconocimiento inicial hasta la obtención de acceso root. Cada paso es explicado con detalle técnico y teórico.</p>
+
+      <div class="video-wrap">
+        <iframe
+          src="https://www.youtube.com/embed/w6QUTAufObI"
+          title="PR01 — De la Teoría a la Práctica: Walkthrough SnakeOil"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <div class="video-label">▲ PR01 — De la Teoría a la Práctica: Walkthrough en Acción · Magdalena Yesenia Tristán Rivera · 174702</div>
+
+      <div class="url-box">
+        <span>URL:</span>
+        <a href="https://www.youtube.com/watch?v=w6QUTAufObI" target="_blank">https://www.youtube.com/watch?v=w6QUTAufObI</a>
+      </div>
+
+      <h3>Contenido del Video</h3>
+      <div class="phases">
+        <div class="phase"><div class="phase-num">01</div><h4>Intro y Setup</h4><p>Presentación del proyecto, configuración del entorno de virtualización y objetivo de la práctica.</p></div>
+        <div class="phase"><div class="phase-num">02</div><h4>Reconocimiento</h4><p>Descubrimiento de la máquina objetivo en la red y obtención de la IP con netdiscover.</p></div>
+        <div class="phase"><div class="phase-num">03</div><h4>Escaneo nmap</h4><p>Identificación de puertos abiertos, servicios en ejecución y versiones del software.</p></div>
+        <div class="phase"><div class="phase-num">04</div><h4>Enumeración</h4><p>Análisis profundo de los servicios descubiertos y búsqueda de vectores de ataque.</p></div>
+        <div class="phase"><div class="phase-num">05</div><h4>Explotación</h4><p>Ejecución del exploit seleccionado y obtención de acceso inicial al sistema.</p></div>
+        <div class="phase"><div class="phase-num">06</div><h4>Root & Flags</h4><p>Escalada de privilegios, obtención de acceso root y captura de flags de confirmación.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MÁQUINA VIRTUAL ══ -->
+<div id="section-maquina" class="sec">
+  <div class="win">
+    <div class="wbar"><span class="wd wr"></span><span class="wd wy"></span><span class="wd wg"></span><span class="wt">MÁQUINA VIRTUAL OBJETIVO</span></div>
+    <div class="cnt">
+      <h2>⊕ SnakeOil — VulnHub</h2>
+      <p>La máquina objetivo seleccionada para este walkthrough es <strong>SnakeOil</strong>, disponible en la plataforma VulnHub — repositorio de máquinas virtuales diseñadas específicamente para practicar pentesting de forma legal y ética.</p>
+
+      <div class="ibox">
+        <h4>◈ ¿Qué es VulnHub?</h4>
+        <p>VulnHub es una plataforma que proporciona máquinas virtuales vulnerables de forma gratuita para que profesionales y estudiantes de ciberseguridad puedan practicar técnicas de pentesting en un entorno controlado y legal. Las máquinas están diseñadas con vulnerabilidades reales pero en un contexto educativo.</p>
+      </div>
+
+      <h3>Información de la Máquina</h3>
+      <table>
+        <thead><tr><th>Característica</th><th>Detalle</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Nombre</strong></td><td>SnakeOil</td></tr>
+          <tr><td><strong>Plataforma</strong></td><td>VulnHub</td></tr>
+          <tr><td><strong>Dificultad</strong></td><td>Intermedia</td></tr>
+          <tr><td><strong>Sistema Operativo</strong></td><td>Linux</td></tr>
+          <tr><td><strong>Objetivo</strong></td><td>Obtener acceso root y capturar flags</td></tr>
+          <tr><td><strong>Vectores de ataque</strong></td><td>Servicios web, vulnerabilidades de aplicaciones, escalada de privilegios</td></tr>
+        </tbody>
+      </table>
+
+      <div class="url-box">
+        <span>Descargar:</span>
+        <a href="https://www.vulnhub.com/entry/digitalworldlocal-snakeoil,738/" target="_blank">https://www.vulnhub.com/entry/digitalworldlocal-snakeoil,738/</a>
+      </div>
+
+      <h3>Instrucciones de Configuración</h3>
+      <div class="timeline">
+        <div class="tl-item">
+          <h4>1. Descargar la máquina</h4>
+          <p>Acceder a la URL de VulnHub y descargar el archivo <code>.ova</code> o <code>.vmdk</code> de SnakeOil.</p>
+        </div>
+        <div class="tl-item">
+          <h4>2. Importar en VirtualBox / VMware</h4>
+          <p>File → Import Appliance (VirtualBox) o File → Open (VMware). Configurar la red como <strong>Host-Only</strong> o <strong>Red Interna</strong>.</p>
+        </div>
+        <div class="tl-item">
+          <h4>3. Configurar Kali Linux</h4>
+          <p>Asegurarse de que la máquina atacante (Kali Linux) esté en la misma red interna que SnakeOil para poder comunicarse.</p>
+        </div>
+        <div class="tl-item">
+          <h4>4. Verificar conectividad</h4>
+          <p>Desde Kali, ejecutar <code>netdiscover</code> o <code>arp-scan --localnet</code> para confirmar que la máquina objetivo es visible en la red.</p>
+        </div>
+        <div class="tl-item">
+          <h4>5. ¡Comenzar el walkthrough!</h4>
+          <p>Una vez confirmada la conectividad, seguir el proceso documentado en este proyecto o ver el video para la guía completa paso a paso.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <span>PR01 — De la Teoría a la Práctica: Walkthrough en Acción</span><br>
+  Magdalena Yesenia Tristán Rivera · 174702 · CNO IV Programación WAP<br>
+  <span style="color:var(--dim);font-size:10px;margin-top:5px;display:block;">Docente: Mtro. Servando López Contreras · Universidad Politécnica de San Luis Potosí · 2026</span>
+</footer>
+
+<script>
+// Matrix
+(function(){
+  const c=document.getElementById('mc'),ctx=c.getContext('2d');
+  c.width=innerWidth;c.height=innerHeight;
+  const ch='01ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%SELECT NMAP EXPLOIT ROOT';
+  const fs=14,cols=Math.floor(c.width/fs);
+  const dr=Array(cols).fill(1);
+  function draw(){
+    ctx.fillStyle='rgba(10,7,20,0.05)';ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle='#b388ff';ctx.font=fs+'px monospace';
+    dr.forEach((y,i)=>{
+      ctx.fillText(ch[Math.floor(Math.random()*ch.length)],i*fs,y*fs);
+      if(y*fs>c.height&&Math.random()>.975)dr[i]=0;dr[i]++;
+    });
+  }
+  setInterval(draw,42);
+  addEventListener('resize',()=>{c.width=innerWidth;c.height=innerHeight;});
+})();
+
+function show(id,btn){
+  document.querySelectorAll('.sec').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(el=>el.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
