@@ -20,6 +20,8 @@
         .req-list { list-style:none; margin-top:12px; }
         .req-list li { border-left:2px solid var(--g); padding:10px 14px; margin-bottom:10px; background:rgba(179,136,255,.03); font-size:.82rem; color:var(--txt); opacity:.92; line-height:1.6; }
         .req-list code { color:var(--ap); background:rgba(59,157,255,.08); padding:1px 6px; border-radius:2px; }
+        .req-list .why { display:block; margin-top:6px; padding-top:6px; border-top:1px dashed var(--bdr); color:var(--gdim); font-size:.76rem; }
+        .req-list .why b { color:var(--g); }
         .payload-box { background:rgba(0,0,0,.3); border:1px solid var(--bdr); border-left:3px solid var(--ap); padding:12px 16px; font-family:'Courier New',monospace; font-size:.82rem; color:#7ee787; border-radius:2px; overflow-x:auto; margin:10px 0; }
         .evidence-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:14px; }
         .evidence-card { border:1px solid var(--bdr); overflow:hidden; }
@@ -41,6 +43,10 @@
         .nav-labs a:hover { border-color:var(--ap); }
         .nav-labs .mid { color:var(--g); border-color:var(--g); }
 
+        .analysis-table { width:100%; border-collapse:collapse; font-size:.78rem; margin-top:10px; }
+        .analysis-table th { color:var(--g); text-align:left; padding:8px 10px; border-bottom:1px solid var(--bdr); background:rgba(179,136,255,.06); font-size:.68rem; letter-spacing:.05em; }
+        .analysis-table td { padding:8px 10px; border-bottom:1px solid rgba(179,136,255,.08); color:var(--txt); opacity:.9; vertical-align:top; }
+        .cwe-tag { display:inline-block; font-size:.68rem; letter-spacing:.08em; color:var(--denied); border:1px solid var(--denied); background:rgba(255,95,122,.08); padding:4px 10px; border-radius:2px; margin-top:8px; }
     </style>
 </head>
 <body>
@@ -66,6 +72,7 @@
             <div class="stat-card"><div class="sv"><span class="lvl-badge apprentice">APPRENTICE</span></div><div class="sl">Nivel</div></div>
             <div class="stat-card"><div class="sv blue">Burp Suite</div><div class="sl">Herramienta</div></div>
             <div class="stat-card"><div class="sv">/etc/passwd</div><div class="sl">Archivo objetivo</div></div>
+            <div class="stat-card"><div class="sv blue">CWE-22</div><div class="sl">Clasificación</div></div>
         </div>
         <p style="text-align:center;margin-top:14px;font-size:.78rem;">
             <a href="https://portswigger.net/web-security/file-path-traversal/lab-simple" target="_blank" rel="noopener" style="color:var(--ap);">
@@ -80,6 +87,17 @@
         <h2><i class="fas fa-bullseye"></i> Objetivo del laboratorio</h2>
         <p>Leer el contenido de <code>/etc/passwd</code> explotando el parámetro <code>filename</code> del endpoint de imágenes, que no aplica ninguna validación sobre la ruta recibida.</p>
         <p style="margin-top:10px;"><b style="color:var(--g);">Tipo de explotación:</b> Path traversal directo (secuencias relativas)</p>
+        <span class="cwe-tag"><i class="fas fa-triangle-exclamation"></i> CWE-22: Improper Limitation of a Pathname to a Restricted Directory</span>
+    </section>
+
+    <!-- ══════════════════ CONTEXTO Y RECONOCIMIENTO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-magnifying-glass-chart"></i> Contexto y reconocimiento previo</h2>
+        <p>Antes de intentar explotar nada, lo primero fue identificar <em>dónde</em> la aplicación acepta un input que después usa para leer un archivo del servidor. La tienda del laboratorio ("We Like To Shop") muestra productos con imagen, y cada imagen se carga con una petición del tipo:</p>
+        <div class="payload-box">GET /image?filename=13.jpg HTTP/2</div>
+        <p>Ese parámetro <code>filename</code> es la pista clave: el nombre sugiere directamente que el servidor está usando ese valor para localizar un archivo en disco. Cualquier parámetro con nombres como <code>filename</code>, <code>file</code>, <code>path</code>, <code>doc</code>, <code>document</code>, <code>folder</code> o <code>img</code> es candidato natural a probar por path traversal — es el primer patrón que se busca al hacer reconocimiento de una aplicación.</p>
+        <p>La hipótesis de trabajo fue: si el servidor arma la ruta final como <code>/var/www/images/</code> + valor de <code>filename</code>, sin sanitizar ese valor, entonces meter secuencias <code>../</code> debería permitir "salirse" de la carpeta de imágenes.</p>
     </section>
 
     <!-- ══════════════════ EXPLICACIÓN TÉCNICA ══════════════════ -->
@@ -87,6 +105,11 @@
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
         <h2><i class="fas fa-diagram-project"></i> Explicación técnica de la vulnerabilidad</h2>
         <p>La aplicación arma la ruta del archivo concatenando directamente el valor de <code>filename</code> a un directorio base (algo como <code>/var/www/images/</code>), sin sanitizar secuencias <code>../</code>. Al subir tres niveles de directorio con <code>../../../</code> se llega a la raíz del sistema de archivos, desde donde se puede referenciar <code>etc/passwd</code> directamente.</p>
+        <p style="margin-top:10px;"><b style="color:var(--g);">Por qué existe esta falla:</b> en pseudocódigo, el backend probablemente hace algo equivalente a:</p>
+        <div class="payload-box">ruta_final = "/var/www/images/" + request.get("filename")
+return leer_archivo(ruta_final)</div>
+        <p>No hay ningún paso intermedio que verifique que <code>ruta_final</code> sigue apuntando dentro de <code>/var/www/images/</code>. El sistema operativo interpreta <code>../</code> como "sube un nivel", así que la concatenación de strings termina resolviendo una ruta completamente distinta a la que el desarrollador tenía en mente.</p>
+        <p style="margin-top:10px;"><b style="color:var(--g);">Por qué tres <code>../</code> y no otro número:</b> en este laboratorio no hace falta calcular la profundidad exacta del directorio base — con tres repeticiones se garantiza llegar hasta la raíz (<code>/</code>) del sistema de archivos sin importar si <code>/var/www/images/</code> tenía 2 o 3 niveles; una vez en la raíz, cualquier <code>../</code> adicional simplemente no tiene efecto (no se puede subir más allá de <code>/</code>), por lo que sobrepasar la cantidad necesaria no rompe el payload.</p>
     </section>
 
     <!-- ══════════════════ PROCEDIMIENTO ══════════════════ -->
@@ -94,12 +117,24 @@
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
         <h2><i class="fas fa-list-ol"></i> Procedimiento paso a paso</h2>
         <ul class="req-list">
-            <li><b>Paso 1.</b> Entrar al lab y activar <b>Intercept on</b> en Burp Suite (pestaña Proxy).</li>
-            <li><b>Paso 2.</b> Hacer clic en cualquier producto de la tienda para que el navegador pida su imagen.</li>
-            <li><b>Paso 3.</b> Cuando Burp intercepte <code>GET /image?filename=N.jpg</code>, mandarla a Repeater (clic derecho → Send to Repeater).</li>
-            <li><b>Paso 4.</b> En Repeater, sustituir el valor de <code>filename</code> por el payload.</li>
-            <li><b>Paso 5.</b> Enviar (Send) y revisar que el Response devuelva el contenido de <code>/etc/passwd</code>.</li>
-            <li><b>Paso 6.</b> Confirmar el badge "Lab solved" en la esquina superior derecha del navegador.</li>
+            <li><b>Paso 1.</b> Entrar al lab y activar <b>Intercept on</b> en Burp Suite (pestaña Proxy).
+                <span class="why"><b>Por qué:</b> sin interceptar, el navegador arma y envía la petición completa (headers, cookies de sesión, etc.) sin darnos oportunidad de modificarla antes de que salga. Interceptar la "congela" a mitad de camino.</span>
+            </li>
+            <li><b>Paso 2.</b> Hacer clic en cualquier producto de la tienda para que el navegador pida su imagen.
+                <span class="why"><b>Por qué:</b> es el disparador natural que hace que el navegador arme la petición <code>/image?filename=...</code> que queremos interceptar — no hay forma de "adivinar" esa URL sin verla generarse primero.</span>
+            </li>
+            <li><b>Paso 3.</b> Cuando Burp intercepte <code>GET /image?filename=N.jpg</code>, mandarla a Repeater (clic derecho → Send to Repeater).
+                <span class="why"><b>Por qué Repeater y no editar la URL a mano:</b> Repeater conserva automáticamente todos los headers originales (cookie de sesión, user-agent, referer) que la aplicación podría estar validando, y permite reenviar la misma petición las veces que haga falta sin repetir el flujo de intercepción cada vez.</span>
+            </li>
+            <li><b>Paso 4.</b> En Repeater, sustituir el valor de <code>filename</code> por el payload.
+                <span class="why"><b>Por qué solo se cambia ese parámetro:</b> es el único campo bajo control del atacante que termina siendo usado para localizar un archivo en disco; tocar cualquier otro header no tiene efecto sobre la vulnerabilidad.</span>
+            </li>
+            <li><b>Paso 5.</b> Enviar (Send) y revisar que el Response devuelva el contenido de <code>/etc/passwd</code>.
+                <span class="why"><b>Qué confirma esto:</b> que el servidor sí concatenó el payload sin sanitizarlo y que el sistema operativo resolvió la ruta hasta un archivo fuera del directorio de imágenes esperado.</span>
+            </li>
+            <li><b>Paso 6.</b> Confirmar el badge "Lab solved" en la esquina superior derecha del navegador.
+                <span class="why"><b>Por qué:</b> es la validación automática de PortSwigger de que la explotación fue exitosa y completa, más allá de que el Response "se vea bien".</span>
+            </li>
         </ul>
     </section>
 
@@ -110,6 +145,44 @@
         <div class="payload-box">GET /image?filename=../../../etc/passwd HTTP/2</div>
         <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-magnifying-glass"></i> Explicación del payload</h2>
         <p>Cada <code>../</code> sube un nivel de directorio; tres repeticiones son suficientes para llegar a la raíz desde <code>/var/www/images/</code> y acceder a <code>/etc/passwd</code>. El servidor no valida ni filtra esta secuencia en ningún punto.</p>
+        <table class="analysis-table">
+            <tr><th>Fragmento</th><th>Qué hace</th></tr>
+            <tr><td><code>filename=</code></td><td>Parámetro vulnerable que el backend usa directamente para construir la ruta del archivo a servir.</td></tr>
+            <tr><td><code>../</code> (×3)</td><td>Cada una sube un nivel de directorio desde el punto de partida (<code>/var/www/images/</code>) hasta llegar a la raíz <code>/</code>.</td></tr>
+            <tr><td><code>etc/passwd</code></td><td>Ruta relativa a la raíz del archivo objetivo — el listado de cuentas de usuario del sistema operativo.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ ANÁLISIS DE LA RESPUESTA ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-file-lines"></i> Análisis de la respuesta obtenida</h2>
+        <p>El servidor respondió con <code>HTTP/2 200 OK</code> y, en vez de una imagen, el <code>Content-Type</code> siguió marcado como <code>image/jpeg</code> pero el cuerpo de la respuesta trae texto plano — otra señal de que el servidor entrega ciegamente el contenido del archivo resuelto, sin verificar que en realidad sea una imagen. El contenido devuelto tiene esta forma:</p>
+        <div class="payload-box">root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+...
+academy:x:10000:10000::/academy:/bin/bash</div>
+        <p>Cada línea de <code>/etc/passwd</code> sigue el formato <code>usuario:x:UID:GID:comentario:home:shell</code>. Aunque en sistemas modernos las contraseñas reales ya no viven aquí (están en <code>/etc/shadow</code>, no accesible sin privilegios), este archivo sigue siendo información sensible porque revela:</p>
+        <table class="analysis-table">
+            <tr><th>Dato expuesto</th><th>Por qué importa</th></tr>
+            <tr><td>Nombres de usuario reales (ej. <code>peter</code>, <code>carlos</code>, <code>academy</code>)</td><td>Da al atacante una lista de cuentas válidas para intentar fuerza bruta o phishing dirigido.</td></tr>
+            <tr><td>Shells asignados (<code>/bin/bash</code> vs <code>/usr/sbin/nologin</code>)</td><td>Indica qué cuentas tienen acceso interactivo real al sistema y cuáles son solo cuentas de servicio.</td></tr>
+            <tr><td>Estructura de directorios <code>home</code></td><td>Confirma rutas del sistema de archivos útiles para futuros payloads de traversal más dirigidos.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ IMPACTO Y RIESGO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-radiation"></i> Impacto y riesgo real</h2>
+        <p>En este laboratorio el objetivo fue <code>/etc/passwd</code> porque es el estándar académico para demostrar la vulnerabilidad de forma inequívoca, pero el mismo parámetro sin sanitizar permite leer <strong>cualquier archivo al que el proceso del servidor web tenga permiso de lectura</strong>. En un sistema real, esto podría incluir:</p>
+        <ul class="req-list">
+            <li>Archivos de configuración con credenciales de base de datos (ej. <code>config.php</code>, <code>.env</code>, <code>web.config</code>).</li>
+            <li>Claves privadas SSH (<code>~/.ssh/id_rsa</code>) si el proceso tiene permisos sobre el home de algún usuario.</li>
+            <li>Código fuente de la aplicación, revelando lógica de negocio y posibles vulnerabilidades adicionales.</li>
+            <li>Logs del servidor, que pueden contener tokens de sesión o datos de otros usuarios.</li>
+        </ul>
+        <p>Es decir: la severidad real de un path traversal no depende del archivo usado para la prueba de concepto, sino de <em>qué tan sensible</em> es el archivo más comprometedor que el atacante logre alcanzar con el mismo parámetro.</p>
     </section>
 
     <!-- ══════════════════ EVIDENCIAS ══════════════════ -->
@@ -135,6 +208,23 @@
         <div class="warn-box">
             <h3>⚠ CONTROL DE SEGURIDAD</h3>
             <p>Nunca construir rutas de archivo concatenando input del usuario directamente. Usar un mapa de identificadores a archivos permitidos (whitelist), o validar la ruta canónica resultante contra el directorio base permitido.</p>
+        </div>
+        <p style="margin-top:12px;">En términos prácticos, la corrección para este caso específico sería reemplazar la concatenación directa por una de estas dos estrategias:</p>
+        <table class="analysis-table">
+            <tr><th>Estrategia</th><th>Cómo se vería aquí</th></tr>
+            <tr><td>Whitelist de IDs</td><td>En vez de recibir un <code>filename</code> libre, recibir un <code>id</code> numérico y mapearlo internamente a un nombre de archivo fijo predefinido por el servidor (el usuario nunca controla el string de la ruta).</td></tr>
+            <tr><td>Validación de ruta canónica</td><td>Resolver la ruta final con <code>getCanonicalPath()</code> (o equivalente) y rechazar la petición si el resultado no empieza con <code>/var/www/images/</code>.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ CONCLUSIÓN DEL LABORATORIO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> Conclusión del laboratorio</h2>
+        <div class="concl-box">
+            <h3>// RESULTADO</h3>
+            <p>El laboratorio se resolvió exitosamente: se identificó el parámetro <code>filename</code> como vector de entrada no validado, se confirmó la hipótesis de concatenación directa mediante el payload <code>../../../etc/passwd</code>, y se obtuvo lectura completa del archivo objetivo, confirmada tanto por el contenido del Response como por el badge "Lab solved" de PortSwigger.</p>
+            <p>Este es el caso más simple de la serie de 6 laboratorios de File Path Traversal — sin ningún filtro ni validación de por medio — y sirve como base conceptual para entender las variantes más avanzadas (bypass de rutas absolutas, filtros no recursivos, doble codificación, validación parcial y byte nulo) que se documentan en las Actividades 08 a 12, donde la misma vulnerabilidad de fondo persiste pero protegida por intentos de mitigación insuficientes.</p>
         </div>
     </section>
 
