@@ -20,6 +20,8 @@
         .req-list { list-style:none; margin-top:12px; }
         .req-list li { border-left:2px solid var(--g); padding:10px 14px; margin-bottom:10px; background:rgba(179,136,255,.03); font-size:.82rem; color:var(--txt); opacity:.92; line-height:1.6; }
         .req-list code { color:var(--ap); background:rgba(59,157,255,.08); padding:1px 6px; border-radius:2px; }
+        .req-list .why { display:block; margin-top:6px; padding-top:6px; border-top:1px dashed var(--bdr); color:var(--gdim); font-size:.76rem; }
+        .req-list .why b { color:var(--g); }
         .payload-box { background:rgba(0,0,0,.3); border:1px solid var(--bdr); border-left:3px solid var(--ap); padding:12px 16px; font-family:'Courier New',monospace; font-size:.82rem; color:#7ee787; border-radius:2px; overflow-x:auto; margin:10px 0; }
         .evidence-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:14px; }
         .evidence-card { border:1px solid var(--bdr); overflow:hidden; }
@@ -40,6 +42,10 @@
         .nav-labs a { color:var(--ap); text-decoration:none; border:1px solid var(--bdr); padding:8px 14px; border-radius:3px; white-space:nowrap; }
         .nav-labs a:hover { border-color:var(--ap); }
         .nav-labs .mid { color:var(--g); border-color:var(--g); }
+        .analysis-table { width:100%; border-collapse:collapse; font-size:.78rem; margin-top:10px; }
+        .analysis-table th { color:var(--g); text-align:left; padding:8px 10px; border-bottom:1px solid var(--bdr); background:rgba(179,136,255,.06); font-size:.68rem; letter-spacing:.05em; }
+        .analysis-table td { padding:8px 10px; border-bottom:1px solid rgba(179,136,255,.08); color:var(--txt); opacity:.9; vertical-align:top; }
+        .cwe-tag { display:inline-block; font-size:.68rem; letter-spacing:.08em; color:var(--denied); border:1px solid var(--denied); background:rgba(255,95,122,.08); padding:4px 10px; border-radius:2px; margin-top:8px; }
 
     </style>
 </head>
@@ -66,6 +72,7 @@
             <div class="stat-card"><div class="sv"><span class="lvl-badge practitioner">PRACTITIONER</span></div><div class="sl">Nivel</div></div>
             <div class="stat-card"><div class="sv blue">Burp Suite</div><div class="sl">Herramienta</div></div>
             <div class="stat-card"><div class="sv">/etc/passwd</div><div class="sl">Archivo objetivo</div></div>
+            <div class="stat-card"><div class="sv blue" style="font-size:1.1rem;">CWE-22</div><div class="sl">Clasificación</div></div>
         </div>
         <p style="text-align:center;margin-top:14px;font-size:.78rem;">
             <a href="https://portswigger.net/web-security/file-path-traversal/lab-validate-start-of-path" target="_blank" rel="noopener" style="color:var(--ap);">
@@ -82,6 +89,13 @@
         <p style="margin-top:10px;"><b style="color:var(--g);">Tipo de explotación:</b> Bypass de filtro — validación parcial</p>
     </section>
 
+    <!-- ══════════════════ CONTEXTO Y RECONOCIMIENTO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-magnifying-glass-chart"></i> Contexto y reconocimiento previo</h2>
+        <p>Este laboratorio cambia el formato del parámetro vulnerable: en vez de recibir solo un nombre de archivo (como <code>13.jpg</code>), el endpoint recibe la <em>ruta completa</em> (como <code>/var/www/images/13.jpg</code>). Eso sugiere que el desarrollador intentó una validación distinta: en vez de bloquear patrones peligrosos, comprobar que la ruta recibida "se vea correcta" verificando que empiece donde debería. La pregunta de reconocimiento es: ¿la validación cubre <em>toda</em> la ruta, o solo su inicio?</p>
+    </section>
+
     <!-- ══════════════════ EXPLICACIÓN TÉCNICA ══════════════════ -->
     <section class="window">
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
@@ -94,11 +108,16 @@
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
         <h2><i class="fas fa-list-ol"></i> Procedimiento paso a paso</h2>
         <ul class="req-list">
-            <li><b>Paso 1.</b> Activar Intercept on en Burp y hacer clic en un producto.</li>
-            <li><b>Paso 2.</b> Interceptar la request — aquí <code>filename</code> ya trae la ruta completa (ej. <code>/var/www/images/40.jpg</code>).</li>
-            <li><b>Paso 3.</b> Mandarla a Repeater.</li>
-            <li><b>Paso 4.</b> Conservar el prefijo <code>/var/www/images/</code> y añadir <code>../../../etc/passwd</code> justo después.</li>
-            <li><b>Paso 5.</b> Enviar y confirmar la fuga en el Response y el badge "Lab solved".</li>
+            <li><b>Paso 1.</b> Interceptar la request — aquí <code>filename</code> ya trae la ruta completa (ej. <code>/var/www/images/40.jpg</code>).
+            </li>
+            <li><b>Paso 2.</b> Mandarla a Repeater.
+            </li>
+            <li><b>Paso 3.</b> Conservar el prefijo <code>/var/www/images/</code> y añadir <code>../../../etc/passwd</code> justo después.
+                <span class="why"><b>Por qué:</b> se conserva el prefijo exacto <code>/var/www/images/</code> porque es justo lo único que la validación revisa — mientras el string empiece así, cualquier cosa después pasa desapercibida.</span>
+            </li>
+            <li><b>Paso 4.</b> Enviar y confirmar la fuga.
+                <span class="why"><b>Por qué:</b> confirma que la validación se detiene apenas confirma el prefijo correcto, sin importar que el resto del string contenga <code>../../../etc/passwd</code>.</span>
+            </li>
         </ul>
     </section>
 
@@ -109,6 +128,26 @@
         <div class="payload-box">GET /image?filename=/var/www/images/../../../etc/passwd HTTP/2</div>
         <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-magnifying-glass"></i> Explicación del payload</h2>
         <p>La validación "empieza con <code>/var/www/images/</code>" se cumple literalmente; el resto del string (<code>../../../etc/passwd</code>) nunca es inspeccionado y termina resolviendo fuera del directorio permitido.</p>
+        <table class="analysis-table">
+            <tr><th>Fragmento</th><th>Qué hace</th></tr>
+            <tr><td><code>/var/www/images/</code></td><td>Prefijo exacto que la validación exige — se conserva íntegro para "engañar" esa comprobación.</td></tr>
+            <tr><td><code>../../../etc/passwd</code></td><td>Añadido justo después del prefijo válido; sube tres niveles desde <code>/var/www/images/</code> hasta la raíz y luego entra a <code>etc/passwd</code>.</td></tr>
+            <tr><td>Ruta final resuelta por el SO</td><td>El sistema de archivos no le da ningún trato especial al prefijo "aprobado" — simplemente resuelve la cadena completa, <code>../</code> incluido.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ ANÁLISIS DE LA RESPUESTA ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-file-lines"></i> Análisis de la respuesta obtenida</h2>
+        <p>El Response vuelve a exponer <code>/etc/passwd</code>, confirmando que la validación del servidor terminó su trabajo en cuanto comprobó los primeros caracteres del string. Esta es una falla de <em>alcance</em> de la validación, no de ausencia de validación: existe una comprobación real, solo que cubre una porción insuficiente del input. Es un error sutil porque, a diferencia de un filtro ausente, aquí sí hay evidencia de que el desarrollador pensó en la seguridad del endpoint — simplemente no fue suficiente.</p>
+    </section>
+
+    <!-- ══════════════════ IMPACTO Y RIESGO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-radiation"></i> Impacto y riesgo real</h2>
+        <p>Las validaciones de "solo el inicio" son comunes cuando se combina una API que antes solo aceptaba nombres de archivo simples con una nueva necesidad de aceptar sub-rutas (por ejemplo, subcarpetas de categorías de producto). El resultado es un endpoint que parece más seguro de lo que es, porque cualquier prueba superficial con la ruta exacta esperada (sin manipular) no revela el problema — hace falta pensar específicamente en anexar contenido después del prefijo validado.</p>
     </section>
 
     <!-- ══════════════════ EVIDENCIAS ══════════════════ -->
@@ -134,6 +173,21 @@
         <div class="warn-box">
             <h3>⚠ CONTROL DE SEGURIDAD</h3>
             <p>No basta con validar el prefijo de un string. Hay que resolver la ruta canónica completa (eliminando <code>../</code>, symlinks, etc.) y validar esa ruta final contra el directorio permitido.</p>
+        </div>
+        <table class="analysis-table">
+            <tr><th>Estrategia</th><th>Cómo aplica aquí</th></tr>
+            <tr><td>Validación de ruta canónica completa</td><td>Resolver la ruta final (no solo comparar el prefijo del string crudo) y verificar que ese resultado siga dentro de <code>/var/www/images/</code>.</td></tr>
+            <tr><td>Rechazar por defecto ante ambigüedad</td><td>Si la ruta contiene <code>../</code> en cualquier posición, rechazar directamente en vez de intentar "permitir con excepciones" basadas en el inicio del string.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ CONCLUSIÓN DEL LABORATORIO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> Conclusión del laboratorio</h2>
+        <div class="concl-box">
+            <h3>// RESULTADO</h3>
+            <p>Este laboratorio es un puente conceptual hacia el último de la serie: aquí el problema fue que la validación miró una parte del input y asumió que el resto era seguro por extensión — un salto de confianza injustificado. En la Actividad 12 se verá una variación de la misma idea, pero llevada a un extremo distinto: dos componentes distintos (la validación de string y el sistema de archivos) interpretando la <em>misma</em> cadena completa de formas diferentes.</p>
         </div>
     </section>
 
