@@ -20,6 +20,8 @@
         .req-list { list-style:none; margin-top:12px; }
         .req-list li { border-left:2px solid var(--g); padding:10px 14px; margin-bottom:10px; background:rgba(179,136,255,.03); font-size:.82rem; color:var(--txt); opacity:.92; line-height:1.6; }
         .req-list code { color:var(--ap); background:rgba(59,157,255,.08); padding:1px 6px; border-radius:2px; }
+        .req-list .why { display:block; margin-top:6px; padding-top:6px; border-top:1px dashed var(--bdr); color:var(--gdim); font-size:.76rem; }
+        .req-list .why b { color:var(--g); }
         .payload-box { background:rgba(0,0,0,.3); border:1px solid var(--bdr); border-left:3px solid var(--ap); padding:12px 16px; font-family:'Courier New',monospace; font-size:.82rem; color:#7ee787; border-radius:2px; overflow-x:auto; margin:10px 0; }
         .evidence-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:14px; }
         .evidence-card { border:1px solid var(--bdr); overflow:hidden; }
@@ -40,6 +42,10 @@
         .nav-labs a { color:var(--ap); text-decoration:none; border:1px solid var(--bdr); padding:8px 14px; border-radius:3px; white-space:nowrap; }
         .nav-labs a:hover { border-color:var(--ap); }
         .nav-labs .mid { color:var(--g); border-color:var(--g); }
+        .analysis-table { width:100%; border-collapse:collapse; font-size:.78rem; margin-top:10px; }
+        .analysis-table th { color:var(--g); text-align:left; padding:8px 10px; border-bottom:1px solid var(--bdr); background:rgba(179,136,255,.06); font-size:.68rem; letter-spacing:.05em; }
+        .analysis-table td { padding:8px 10px; border-bottom:1px solid rgba(179,136,255,.08); color:var(--txt); opacity:.9; vertical-align:top; }
+        .cwe-tag { display:inline-block; font-size:.68rem; letter-spacing:.08em; color:var(--denied); border:1px solid var(--denied); background:rgba(255,95,122,.08); padding:4px 10px; border-radius:2px; margin-top:8px; }
 
     </style>
 </head>
@@ -66,6 +72,7 @@
             <div class="stat-card"><div class="sv"><span class="lvl-badge expert">EXPERT</span></div><div class="sl">Nivel</div></div>
             <div class="stat-card"><div class="sv blue">Burp Suite</div><div class="sl">Herramienta</div></div>
             <div class="stat-card"><div class="sv">/etc/passwd</div><div class="sl">Archivo objetivo</div></div>
+            <div class="stat-card"><div class="sv blue" style="font-size:1.1rem;">CWE-22 / CWE-626 (Null Byte Interaction)</div><div class="sl">Clasificación</div></div>
         </div>
         <p style="text-align:center;margin-top:14px;font-size:.78rem;">
             <a href="https://portswigger.net/web-security/file-path-traversal/lab-validate-file-extension-null-byte-bypass" target="_blank" rel="noopener" style="color:var(--ap);">
@@ -82,6 +89,13 @@
         <p style="margin-top:10px;"><b style="color:var(--g);">Tipo de explotación:</b> Bypass de filtro — byte nulo</p>
     </section>
 
+    <!-- ══════════════════ CONTEXTO Y RECONOCIMIENTO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-magnifying-glass-chart"></i> Contexto y reconocimiento previo</h2>
+        <p>Este es el último y más avanzado de los seis laboratorios. Aquí la aplicación agrega una capa de validación distinta a todas las anteriores: en vez de vigilar secuencias de traversal, exige que el <code>filename</code> termine en una extensión específica (como <code>.jpg</code> o <code>.png</code>), asumiendo que si el archivo "parece" una imagen, es seguro servirlo. La pregunta de reconocimiento aquí ya no es sobre el filtro de rutas, sino sobre <em>cómo interpreta el string completo cada componente</em> del sistema — el que valida contra el que finalmente abre el archivo.</p>
+    </section>
+
     <!-- ══════════════════ EXPLICACIÓN TÉCNICA ══════════════════ -->
     <section class="window">
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
@@ -94,11 +108,14 @@
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
         <h2><i class="fas fa-list-ol"></i> Procedimiento paso a paso</h2>
         <ul class="req-list">
-            <li><b>Paso 1.</b> Activar Intercept on en Burp y hacer clic en un producto.</li>
-            <li><b>Paso 2.</b> Interceptar la request de imagen y mandarla a Repeater.</li>
-            <li><b>Paso 3.</b> Construir el payload de traversal y anexar <code>%00</code> seguido de la extensión esperada por el filtro.</li>
-            <li><b>Paso 4.</b> Enviar — la validación de extensión pasa (termina en la extensión correcta como string), pero el sistema abre el archivo real antes del byte nulo.</li>
-            <li><b>Paso 5.</b> Confirmar la fuga en el Response y el badge "Lab solved".</li>
+            <li><b>Paso 1.</b> Interceptar y mandar a Repeater la request de imagen.
+            </li>
+            <li><b>Paso 2.</b> Construir el payload de traversal y anexar <code>%00</code> seguido de la extensión esperada por el filtro.
+                <span class="why"><b>Por qué:</b> se construye primero el traversal normal (<code>../../../etc/passwd</code>) porque sigue siendo la base del ataque; el byte nulo no reemplaza la técnica de traversal, solo evade la capa adicional de validación de extensión.</span>
+            </li>
+            <li><b>Paso 3.</b> Enviar — la validación de extensión pasa (termina en la extensión correcta como string), pero el sistema abre el archivo real antes del byte nulo.
+                <span class="why"><b>Por qué:</b> el byte nulo (<code>%00</code>) se coloca justo antes de la extensión esperada porque es el punto exacto donde queremos que la validación de string "vea" algo distinto a lo que el sistema operativo termina abriendo.</span>
+            </li>
         </ul>
     </section>
 
@@ -109,6 +126,26 @@
         <div class="payload-box">GET /image?filename=../../../etc/passwd%00.jpg HTTP/2</div>
         <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-magnifying-glass"></i> Explicación del payload</h2>
         <p>Para la validación de string, el filename "termina en .jpg" ✓. Para el sistema de archivos, la cadena real que se abre se corta en el byte nulo: <code>../../../etc/passwd</code>. Ambas capas interpretan el mismo string de forma distinta, y esa discrepancia es la vulnerabilidad.</p>
+        <table class="analysis-table">
+            <tr><th>Fragmento</th><th>Qué hace</th></tr>
+            <tr><td><code>../../../etc/passwd</code></td><td>El traversal de siempre — sube tres niveles y apunta al archivo objetivo real.</td></tr>
+            <tr><td><code>%00</code></td><td>Byte nulo codificado en URL. Para APIs de sistema de archivos escritas en (o que envuelven) código C, marca el final efectivo de la cadena.</td></tr>
+            <tr><td><code>.jpg</code></td><td>Extensión "decorativa": solo existe para que la validación de string, que revisa el final literal del texto, la vea y lo apruebe.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ ANÁLISIS DE LA RESPUESTA ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-file-lines"></i> Análisis de la respuesta obtenida</h2>
+        <p>El Response vuelve a entregar <code>/etc/passwd</code>, pero la lección de este laboratorio está más en el <em>request</em> que en el response: dos componentes de la misma aplicación (la rutina de validación de extensión y la función que abre el archivo en disco) reciben exactamente el mismo string <code>../../../etc/passwd%00.jpg</code>, y llegan a conclusiones distintas sobre dónde termina. La validación ve una cadena completa que termina en <code>.jpg</code>; el sistema de archivos ve una cadena que termina en el byte nulo. Ninguno de los dos está "equivocado" en su propia lógica — el problema es que no comparten la misma interpretación del dato.</p>
+    </section>
+
+    <!-- ══════════════════ IMPACTO Y RIESGO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-radiation"></i> Impacto y riesgo real</h2>
+        <p>Los bypass de byte nulo fueron extremadamente comunes en aplicaciones PHP y Java antiguas (versiones previas a mediados de los 2000/2010, según el lenguaje) antes de que los runtimes empezaran a rechazar bytes nulos en rutas de archivo por defecto. Aunque hoy es menos común en runtimes modernos, sigue siendo relevante en sistemas heredados, código que envuelve librerías nativas en C, o APIs de bajo nivel que no sanitizan explícitamente este carácter — y es la técnica de bypass más avanzada de las seis, por eso PortSwigger la clasifica como Expert.</p>
     </section>
 
     <!-- ══════════════════ EVIDENCIAS ══════════════════ -->
@@ -134,6 +171,21 @@
         <div class="warn-box">
             <h3>⚠ CONTROL DE SEGURIDAD</h3>
             <p>Actualizar a versiones de lenguaje/runtime que rechacen bytes nulos en rutas de archivo (la mayoría de los stacks modernos ya lo hacen), y nunca confiar en validaciones de extensión basadas solo en comparación de strings — validar también el tipo real del archivo (magic bytes) y la ruta canónica.</p>
+        </div>
+        <table class="analysis-table">
+            <tr><th>Estrategia</th><th>Cómo aplica aquí</th></tr>
+            <tr><td>Runtime actualizado</td><td>Usar versiones de lenguaje que rechacen explícitamente bytes nulos (<code>%00</code>) en APIs de sistema de archivos — la mayoría de los stacks modernos ya lo hacen por defecto.</td></tr>
+            <tr><td>Validar contenido real, no solo el nombre</td><td>Además de la extensión, verificar los "magic bytes" del archivo (su firma binaria real) y la ruta canónica final — así ninguna manipulación del string del nombre logra servir un archivo distinto al esperado.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ CONCLUSIÓN DEL LABORATORIO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> Conclusión del laboratorio</h2>
+        <div class="concl-box">
+            <h3>// RESULTADO</h3>
+            <p>Con este laboratorio se cierra la serie de seis: el hilo conductor de todos ellos, desde la concatenación simple (Actividad 07) hasta este byte nulo, es que <strong>ninguna capa de "filtrado" o "validación de string" sustituye a validar la ruta canónica final que el sistema operativo realmente va a resolver</strong>. Cada laboratorio explotó una forma distinta de romper esa suposición: rutas absolutas, strip no recursivo, doble decodificación, validación parcial del prefijo, y ahora una discrepancia de interpretación entre dos componentes del mismo sistema. La defensa que generaliza contra las seis variantes es siempre la misma — resolver y comparar la ruta final, nunca el texto de entrada.</p>
         </div>
     </section>
 
