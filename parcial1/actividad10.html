@@ -20,6 +20,8 @@
         .req-list { list-style:none; margin-top:12px; }
         .req-list li { border-left:2px solid var(--g); padding:10px 14px; margin-bottom:10px; background:rgba(179,136,255,.03); font-size:.82rem; color:var(--txt); opacity:.92; line-height:1.6; }
         .req-list code { color:var(--ap); background:rgba(59,157,255,.08); padding:1px 6px; border-radius:2px; }
+        .req-list .why { display:block; margin-top:6px; padding-top:6px; border-top:1px dashed var(--bdr); color:var(--gdim); font-size:.76rem; }
+        .req-list .why b { color:var(--g); }
         .payload-box { background:rgba(0,0,0,.3); border:1px solid var(--bdr); border-left:3px solid var(--ap); padding:12px 16px; font-family:'Courier New',monospace; font-size:.82rem; color:#7ee787; border-radius:2px; overflow-x:auto; margin:10px 0; }
         .evidence-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:14px; }
         .evidence-card { border:1px solid var(--bdr); overflow:hidden; }
@@ -40,6 +42,10 @@
         .nav-labs a { color:var(--ap); text-decoration:none; border:1px solid var(--bdr); padding:8px 14px; border-radius:3px; white-space:nowrap; }
         .nav-labs a:hover { border-color:var(--ap); }
         .nav-labs .mid { color:var(--g); border-color:var(--g); }
+        .analysis-table { width:100%; border-collapse:collapse; font-size:.78rem; margin-top:10px; }
+        .analysis-table th { color:var(--g); text-align:left; padding:8px 10px; border-bottom:1px solid var(--bdr); background:rgba(179,136,255,.06); font-size:.68rem; letter-spacing:.05em; }
+        .analysis-table td { padding:8px 10px; border-bottom:1px solid rgba(179,136,255,.08); color:var(--txt); opacity:.9; vertical-align:top; }
+        .cwe-tag { display:inline-block; font-size:.68rem; letter-spacing:.08em; color:var(--denied); border:1px solid var(--denied); background:rgba(255,95,122,.08); padding:4px 10px; border-radius:2px; margin-top:8px; }
 
     </style>
 </head>
@@ -66,6 +72,7 @@
             <div class="stat-card"><div class="sv"><span class="lvl-badge practitioner">PRACTITIONER</span></div><div class="sl">Nivel</div></div>
             <div class="stat-card"><div class="sv blue">Burp Suite</div><div class="sl">Herramienta</div></div>
             <div class="stat-card"><div class="sv">/etc/passwd</div><div class="sl">Archivo objetivo</div></div>
+            <div class="stat-card"><div class="sv blue" style="font-size:1.1rem;">CWE-22 / CWE-172 (Encoding Error)</div><div class="sl">Clasificación</div></div>
         </div>
         <p style="text-align:center;margin-top:14px;font-size:.78rem;">
             <a href="https://portswigger.net/web-security/file-path-traversal/lab-superfluous-url-decode" target="_blank" rel="noopener" style="color:var(--ap);">
@@ -82,11 +89,18 @@
         <p style="margin-top:10px;"><b style="color:var(--g);">Tipo de explotación:</b> Bypass de filtro — doble URL-decode</p>
     </section>
 
+    <!-- ══════════════════ CONTEXTO Y RECONOCIMIENTO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-magnifying-glass-chart"></i> Contexto y reconocimiento previo</h2>
+        <p>Hasta la Actividad 09, todos los bypass trabajaron a nivel de caracteres literales dentro del string. Este laboratorio cambia de capa por completo: en vez de ocultar el patrón dentro del texto, se oculta dentro de la <em>codificación</em> de la URL. La pregunta de reconocimiento es: si la aplicación tiene varios componentes (por ejemplo un proxy o middleware, y luego la lógica de negocio) que procesan la URL en momentos distintos, ¿decodifican todos exactamente una vez, o alguno decodifica más de una?</p>
+    </section>
+
     <!-- ══════════════════ EXPLICACIÓN TÉCNICA ══════════════════ -->
     <section class="window">
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
         <h2><i class="fas fa-diagram-project"></i> Explicación técnica de la vulnerabilidad</h2>
-        <p>El filtro revisa el input después de un primer URL-decode y no encuentra <code>../</code> literal, así que lo deja pasar. Pero el componente que finalmente abre el archivo hace un <b>segundo</b> decode, revelando la secuencia de traversal que estaba doblemente codificada desde el inicio.</p>
+        <p>El filtro revisa el input después de un primer URL-decode y no encuentra <code>../</code> literal, así que lo deja pasar. Pero el componente que finalmente abre el archivo hace un <em>segundo</em> decode, revelando la secuencia de traversal que estaba doblemente codificada desde el inicio.</p>
     </section>
 
     <!-- ══════════════════ PROCEDIMIENTO ══════════════════ -->
@@ -94,11 +108,16 @@
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
         <h2><i class="fas fa-list-ol"></i> Procedimiento paso a paso</h2>
         <ul class="req-list">
-            <li><b>Paso 1.</b> Activar Intercept on en Burp y hacer clic en un producto.</li>
-            <li><b>Paso 2.</b> Interceptar la request de imagen y mandarla a Repeater.</li>
-            <li><b>Paso 3.</b> Codificar <code>../</code> dos veces: <code>%2e%2e%2f</code> → <code>%252e%252e%252f</code>.</li>
-            <li><b>Paso 4.</b> Repetir tres veces y añadir <code>etc/passwd</code> al final.</li>
-            <li><b>Paso 5.</b> Enviar y confirmar la fuga de datos en el Response y el badge "Lab solved".</li>
+            <li><b>Paso 1.</b> Interceptar y mandar a Repeater la request de imagen.
+            </li>
+            <li><b>Paso 2.</b> Codificar <code>../</code> dos veces: <code>%2e%2e%2f</code> → <code>%252e%252e%252f</code>.
+            </li>
+            <li><b>Paso 3.</b> Repetir tres veces y añadir <code>etc/passwd</code> al final.
+                <span class="why"><b>Por qué:</b> se codifica <code>../</code> dos veces porque necesitamos que, después del <em>primer</em> decode (el que hace el filtro), el resultado siga sin parecerse a <code>../</code> — solo así el filtro lo deja pasar sin detectar nada.</span>
+            </li>
+            <li><b>Paso 4.</b> Enviar y confirmar la fuga de datos en el Response.
+                <span class="why"><b>Por qué:</b> confirma que existe un <em>segundo</em> decode más adelante en el pipeline (normalmente en el componente que finalmente abre el archivo), que sí convierte la codificación restante en la secuencia de traversal real.</span>
+            </li>
         </ul>
     </section>
 
@@ -109,6 +128,26 @@
         <div class="payload-box">GET /image?filename=%252e%252e%252f%252e%252e%252f%252e%252e%252fetc/passwd HTTP/2</div>
         <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-magnifying-glass"></i> Explicación del payload</h2>
         <p><code>%25</code> es el código URL de <code>%</code>. Al decodificar una vez, <code>%252e</code> se vuelve <code>%2e</code> (todavía codificado, así que el filtro no ve <code>../</code>). El segundo decode, hecho por el módulo de archivos, sí lo convierte en <code>../</code> real.</p>
+        <table class="analysis-table">
+            <tr><th>Fragmento</th><th>Qué hace</th></tr>
+            <tr><td><code>%25</code></td><td>Representa el carácter <code>%</code> codificado en URL. Es la clave de la doble codificación: <code>%</code> es el propio carácter de escape de URL-encoding.</td></tr>
+            <tr><td><code>%252e%252e%252f</code></td><td>Tras UN decode se convierte en <code>%2e%2e%2f</code> — sigue codificado, el filtro no reconoce esto como <code>../</code>.</td></tr>
+            <tr><td>Segundo decode (fuera del filtro)</td><td>Convierte <code>%2e%2e%2f</code> en <code>../</code> real — pero esto ocurre en un punto del pipeline que ya no vuelve a pasar por el filtro.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ ANÁLISIS DE LA RESPUESTA ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-file-lines"></i> Análisis de la respuesta obtenida</h2>
+        <p>El Response entrega <code>/etc/passwd</code> igual que en los laboratorios anteriores, pero aquí la evidencia más reveladora es la propia estructura del payload en la request: contiene <code>%25</code> repetido, una señal inequívoca de doble codificación intencional. Esto demuestra que la aplicación tiene al menos dos puntos de decodificación de URL en su pipeline de procesamiento — uno antes de la validación (el que el filtro sí revisa) y otro después (el que finalmente resuelve la ruta del archivo), y que ambos no están sincronizados.</p>
+    </section>
+
+    <!-- ══════════════════ IMPACTO Y RIESGO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-radiation"></i> Impacto y riesgo real</h2>
+        <p>Los bugs de "doble decodificación" son comunes en arquitecturas con varias capas (proxy reverso, framework web, capa de acceso a archivos), donde cada capa puede decodificar la URL por su cuenta sin coordinarse con las demás. Esto significa que la vulnerabilidad no está necesariamente en el código de la aplicación que el equipo de desarrollo escribió, sino en cómo interactúan componentes de infraestructura distintos — lo que la hace más difícil de detectar en una revisión de código tradicional.</p>
     </section>
 
     <!-- ══════════════════ EVIDENCIAS ══════════════════ -->
@@ -134,6 +173,21 @@
         <div class="warn-box">
             <h3>⚠ CONTROL DE SEGURIDAD</h3>
             <p>Decodificar la URL una única vez, en un solo punto centralizado del pipeline, antes de cualquier validación — y validar después de esa decodificación, nunca antes.</p>
+        </div>
+        <table class="analysis-table">
+            <tr><th>Estrategia</th><th>Cómo aplica aquí</th></tr>
+            <tr><td>Decodificación única y centralizada</td><td>Todo el pipeline debe compartir un solo punto donde la URL se decodifica exactamente una vez; cualquier componente posterior debe recibir ya el valor decodificado, nunca decodificar de nuevo.</td></tr>
+            <tr><td>Validar después de decodificar</td><td>El filtro de seguridad debe ejecutarse <em>después</em> de esa única decodificación — validar antes es inútil si algo más adelante vuelve a decodificar.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ CONCLUSIÓN DEL LABORATORIO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> Conclusión del laboratorio</h2>
+        <div class="concl-box">
+            <h3>// RESULTADO</h3>
+            <p>Este laboratorio introduce una categoría de bypass distinta a las anteriores: no se trata de un patrón de texto mal filtrado, sino de un desajuste entre distintas capas de la arquitectura sobre cuántas veces se debe decodificar una URL. Es un recordatorio de que la seguridad de una aplicación no depende solo de su propio código, sino de cómo se comportan en conjunto todos los componentes por los que pasa una petición — el mismo tipo de análisis de "capas" que se repetirá, desde otro ángulo, en la validación parcial de la Actividad 11.</p>
         </div>
     </section>
 
