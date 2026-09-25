@@ -20,6 +20,8 @@
         .req-list { list-style:none; margin-top:12px; }
         .req-list li { border-left:2px solid var(--g); padding:10px 14px; margin-bottom:10px; background:rgba(179,136,255,.03); font-size:.82rem; color:var(--txt); opacity:.92; line-height:1.6; }
         .req-list code { color:var(--ap); background:rgba(59,157,255,.08); padding:1px 6px; border-radius:2px; }
+        .req-list .why { display:block; margin-top:6px; padding-top:6px; border-top:1px dashed var(--bdr); color:var(--gdim); font-size:.76rem; }
+        .req-list .why b { color:var(--g); }
         .payload-box { background:rgba(0,0,0,.3); border:1px solid var(--bdr); border-left:3px solid var(--ap); padding:12px 16px; font-family:'Courier New',monospace; font-size:.82rem; color:#7ee787; border-radius:2px; overflow-x:auto; margin:10px 0; }
         .evidence-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:14px; }
         .evidence-card { border:1px solid var(--bdr); overflow:hidden; }
@@ -40,6 +42,10 @@
         .nav-labs a { color:var(--ap); text-decoration:none; border:1px solid var(--bdr); padding:8px 14px; border-radius:3px; white-space:nowrap; }
         .nav-labs a:hover { border-color:var(--ap); }
         .nav-labs .mid { color:var(--g); border-color:var(--g); }
+        .analysis-table { width:100%; border-collapse:collapse; font-size:.78rem; margin-top:10px; }
+        .analysis-table th { color:var(--g); text-align:left; padding:8px 10px; border-bottom:1px solid var(--bdr); background:rgba(179,136,255,.06); font-size:.68rem; letter-spacing:.05em; }
+        .analysis-table td { padding:8px 10px; border-bottom:1px solid rgba(179,136,255,.08); color:var(--txt); opacity:.9; vertical-align:top; }
+        .cwe-tag { display:inline-block; font-size:.68rem; letter-spacing:.08em; color:var(--denied); border:1px solid var(--denied); background:rgba(255,95,122,.08); padding:4px 10px; border-radius:2px; margin-top:8px; }
 
     </style>
 </head>
@@ -66,6 +72,7 @@
             <div class="stat-card"><div class="sv"><span class="lvl-badge practitioner">PRACTITIONER</span></div><div class="sl">Nivel</div></div>
             <div class="stat-card"><div class="sv blue">Burp Suite</div><div class="sl">Herramienta</div></div>
             <div class="stat-card"><div class="sv">/etc/passwd</div><div class="sl">Archivo objetivo</div></div>
+            <div class="stat-card"><div class="sv blue" style="font-size:1.1rem;">CWE-22</div><div class="sl">Clasificación</div></div>
         </div>
         <p style="text-align:center;margin-top:14px;font-size:.78rem;">
             <a href="https://portswigger.net/web-security/file-path-traversal/lab-sequences-stripped-non-recursively" target="_blank" rel="noopener" style="color:var(--ap);">
@@ -82,6 +89,13 @@
         <p style="margin-top:10px;"><b style="color:var(--g);">Tipo de explotación:</b> Bypass de filtro — strip no recursivo</p>
     </section>
 
+    <!-- ══════════════════ CONTEXTO Y RECONOCIMIENTO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-magnifying-glass-chart"></i> Contexto y reconocimiento previo</h2>
+        <p>Tras ver que bloquear rutas absolutas tampoco es suficiente (Actividad 08), este laboratorio simula un filtro más cuidadoso: sí busca y elimina activamente la secuencia <code>../</code> en cualquier parte del string, incluyendo rutas relativas. El punto ciego a probar aquí es de implementación, no de diseño: ¿qué pasa si el filtro solo recorre el string <em>una vez</em>? Un string diseñado para que, al quitarle la parte detectada, quede otra secuencia válida escondida dentro, podría sobrevivir.</p>
+    </section>
+
     <!-- ══════════════════ EXPLICACIÓN TÉCNICA ══════════════════ -->
     <section class="window">
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
@@ -94,11 +108,18 @@
         <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
         <h2><i class="fas fa-list-ol"></i> Procedimiento paso a paso</h2>
         <ul class="req-list">
-            <li><b>Paso 1.</b> Activar Intercept on en Burp y hacer clic en un producto.</li>
-            <li><b>Paso 2.</b> Interceptar la request de imagen y mandarla a Repeater.</li>
-            <li><b>Paso 3.</b> Construir el payload usando <code>....//</code> en vez de <code>../</code>.</li>
-            <li><b>Paso 4.</b> Enviar y verificar que, tras el strip de un solo paso del servidor, el resultado sigue subiendo directorios.</li>
-            <li><b>Paso 5.</b> Confirmar el Response y el badge "Lab solved".</li>
+            <li><b>Paso 1.</b> Activar Intercept on en Burp y hacer clic en un producto.
+            </li>
+            <li><b>Paso 2.</b> Interceptar la request de imagen y mandarla a Repeater.
+            </li>
+            <li><b>Paso 3.</b> Construir el payload usando <code>....//</code> en vez de <code>../</code>.
+                <span class="why"><b>Por qué:</b> se usa <code>....//</code> en vez de <code>../</code> porque, aunque a simple vista no es la secuencia que el filtro busca, contiene una copia de ella escondida en su interior — justo el punto que este laboratorio pone a prueba.</span>
+            </li>
+            <li><b>Paso 4.</b> Enviar y verificar que, tras el strip de un solo paso del servidor, el resultado sigue subiendo directorios.
+                <span class="why"><b>Por qué:</b> confirma que el filtro pasó por el string una sola vez: si volviera a analizar el resultado después de su primer borrado, detectaría el nuevo <code>../</code> que quedó expuesto y lo quitaría también.</span>
+            </li>
+            <li><b>Paso 5.</b> Confirmar el Response y el badge "Lab solved".
+            </li>
         </ul>
     </section>
 
@@ -109,6 +130,26 @@
         <div class="payload-box">GET /image?filename=....//....//....//etc/passwd HTTP/2</div>
         <h2 style="margin-top:22px;font-size:.95rem;"><i class="fas fa-magnifying-glass"></i> Explicación del payload</h2>
         <p>Al quitarle un <code>../</code> del centro de cada <code>....//</code>, queda exactamente <code>../</code>. Como el filtro no vuelve a pasar sobre el string ya "limpio", la secuencia resultante sí funciona y sube tres niveles de directorio.</p>
+        <table class="analysis-table">
+            <tr><th>Fragmento</th><th>Qué hace</th></tr>
+            <tr><td><code>....</code> (cuatro puntos)</td><td>Dos pares de puntos pegados; a simple vista no coincide con el patrón de 2 puntos que el filtro busca como unidad completa.</td></tr>
+            <tr><td><code>//</code> (doble slash)</td><td>Envuelve un <code>../</code> completo dentro de la secuencia más larga: <code>..</code> + <code>/</code> quedan al quitar el <code>../</code> central.</td></tr>
+            <tr><td>Resultado tras UNA pasada del filtro</td><td><code>....//</code> → el filtro encuentra <code>../</code> en el medio de la cadena, lo borra, y lo que sobra son los caracteres exteriores: <code>.</code> + <code>/</code> re-arreglados en <code>../</code> de nuevo.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ ANÁLISIS DE LA RESPUESTA ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-file-lines"></i> Análisis de la respuesta obtenida</h2>
+        <p>El Response vuelve a exponer el contenido de <code>/etc/passwd</code>, lo que confirma que, tras el borrado de una sola pasada, el string resultante seguía conteniendo <code>../</code> — y esa versión final nunca fue re-analizada. Es un error clásico de implementación de filtros de sanitización: tratar la limpieza como una operación de un solo paso ("buscar y reemplazar una vez") en vez de un proceso iterativo ("repetir hasta que ya no haya cambios").</p>
+    </section>
+
+    <!-- ══════════════════ IMPACTO Y RIESGO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-radiation"></i> Impacto y riesgo real</h2>
+        <p>Cualquier filtro que elimine patrones peligrosos en una sola pasada es vulnerable a esta misma técnica de "anidamiento", sin importar el patrón específico que busque. Esto es especialmente riesgoso porque el filtro sí existe y sí funciona contra el payload más obvio (<code>../</code> directo) — un pentest superficial que solo pruebe la secuencia simple concluiría erróneamente que la aplicación está protegida.</p>
     </section>
 
     <!-- ══════════════════ EVIDENCIAS ══════════════════ -->
@@ -134,6 +175,21 @@
         <div class="warn-box">
             <h3>⚠ CONTROL DE SEGURIDAD</h3>
             <p>Aplicar el filtrado de secuencias de forma recursiva hasta que ya no queden cambios (o mejor, evitar el enfoque de "limpiar strings" por completo y validar la ruta canónica final, que es inmune a este tipo de bypass).</p>
+        </div>
+        <table class="analysis-table">
+            <tr><th>Estrategia</th><th>Cómo aplica aquí</th></tr>
+            <tr><td>Strip recursivo</td><td>Repetir la eliminación de <code>../</code> en bucle hasta que una pasada completa no produzca ningún cambio en el string — cierra este bypass específico, pero sigue siendo un parche reactivo.</td></tr>
+            <tr><td>Validación de ruta canónica</td><td>La misma solución de fondo que en la Actividad 08: resolver la ruta final y validar contra el directorio permitido, sin importar cuántas capas de anidamiento tenía el payload original.</td></tr>
+        </table>
+    </section>
+
+    <!-- ══════════════════ CONCLUSIÓN DEL LABORATORIO ══════════════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> Conclusión del laboratorio</h2>
+        <div class="concl-box">
+            <h3>// RESULTADO</h3>
+            <p>Este laboratorio muestra que incluso un filtro que sí ataca la causa correcta (buscar y eliminar <code>../</code>) puede fallar por un defecto de implementación tan simple como no repetir la operación. Es la misma idea de fondo que las Actividades 08 y 10-12 seguirán reforzando desde ángulos distintos: cualquier intento de "limpiar" o "filtrar" un input antes de usarlo dejará huecos específicos a menos que la validación final se haga sobre el resultado ya resuelto, no sobre el texto de entrada.</p>
         </div>
     </section>
 
