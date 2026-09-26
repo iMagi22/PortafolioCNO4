@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad 14 — Ciberseguridad en una mirada</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed #b388ff; padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .terminal { background:rgba(0,0,0,.6); border:1px solid rgba(179,136,255,.2); border-left:3px solid #b388ff; padding:14px 16px; font-size:.78rem; color:#b388ff; overflow-x:auto; line-height:1.75; margin:12px 0; white-space:pre; font-family:'Courier New',monospace; }
+        .refs-list { list-style:none; display:flex; flex-direction:column; gap:7px; margin-top:10px; }
+        .refs-list li { border-left:3px solid rgba(179,136,255,.3); padding:7px 12px; font-size:.8rem; color:rgba(255,255,255,.75); transition:border-color .2s; }
+        .refs-list li:hover { border-left-color:#b388ff; }
+        .refs-list li a { color:#3b9dff; text-decoration:none; }
+        .refs-list li a:hover { text-decoration:underline; }
+        .refs-list li i { color:#b388ff; margin-right:6px; }
+        .concl-box { border:1px solid rgba(179,136,255,.2); padding:20px; margin-bottom:12px; background:rgba(179,136,255,.02); }
+        .concl-box.orange { border-color:rgba(255,106,0,.3); border-top:2px solid #ff6a00; background:rgba(255,106,0,.03); }
+        .concl-box.green  { border-top:2px solid #b388ff; }
+        .concl-box h3 { font-size:.82rem; letter-spacing:.12em; margin-bottom:12px; }
+        .concl-box.green h3 { color:#b388ff; } .concl-box.orange h3 { color:#ff6a00; }
+        .concl-box p { font-size:.85rem; color:rgba(255,255,255,.8); margin-bottom:8px; line-height:1.8; }
+        .concl-box p:last-child { margin-bottom:0; }
+        .concl-box strong { color:#b388ff; }
+        .pdf-btn-wrap { text-align:center; padding:16px 0 4px; }
+        .pdf-btn-wrap a { display:inline-flex; align-items:center; gap:8px; background:#b388ff; color:#0a0714; border:none; padding:11px 28px; font-weight:bold; font-size:.9rem; letter-spacing:.1em; text-decoration:none; transition:background .2s,box-shadow .2s; font-family:'Courier New',monospace; }
+        .pdf-btn-wrap a:hover { background:#8b5cf6; box-shadow:0 0 18px rgba(179,136,255,.4); }
+        .threat-banner {
+            background: linear-gradient(90deg, rgba(255,95,122,.15), rgba(255,95,122,.05));
+            border: 1px solid rgba(255,95,122,.4);
+            border-left: 4px solid #ff5f7a;
+            padding: 12px 18px;
+            margin-bottom: 18px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .threat-banner .tb-icon { font-size:1.4rem; }
+        .threat-banner .tb-text { font-size:.85rem; color:#fff; }
+        .threat-banner .tb-text strong { color:#ff5f7a; }
+        .threat-banner .tb-badge { margin-left:auto; font-size:.65rem; letter-spacing:.15em; color:#ff5f7a; border:1px solid #ff5f7a; padding:3px 10px; white-space:nowrap; }
+        .attack-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:12px; }
+        .attack-card {
+            border:1px solid rgba(179,136,255,.2); padding:18px 16px;
+            background:rgba(179,136,255,.02); transition:all .2s;
+            position:relative; overflow:hidden;
+        }
+        .attack-card::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:2px;
+            background: var(--ac, #b388ff);
+        }
+        .attack-card:hover { border-color:rgba(179,136,255,.5); transform:translateY(-2px); }
+        .attack-card .ac-icon { font-size:1.6rem; margin-bottom:8px; }
+        .attack-card .ac-name { font-weight:bold; color:#fff; font-size:.95rem; margin-bottom:6px; }
+        .attack-card .ac-desc { font-size:.78rem; color:rgba(255,255,255,.7); line-height:1.6; }
+        .attack-card.red { --ac:#ff5f7a; border-color:rgba(255,95,122,.2); background:rgba(255,95,122,.03); }
+        .attack-card.orange { --ac:#ff6a00; border-color:rgba(255,106,0,.2); background:rgba(255,106,0,.03); }
+        .attack-card.yellow { --ac:#ffdd00; border-color:rgba(255,221,0,.2); background:rgba(255,221,0,.03); }
+        .attack-card.cyan { --ac:#3b9dff; border-color:rgba(59,157,255,.2); background:rgba(59,157,255,.03); }
+        .kc-wrap { display:flex; align-items:stretch; overflow-x:auto; gap:0; margin-top:12px; padding-bottom:6px; }
+        .kc-step { flex:1; min-width:120px; border:1px solid rgba(179,136,255,.2); border-right:none; padding:16px 10px; position:relative; background:rgba(179,136,255,.02); transition:background .2s; text-align:center; }
+        .kc-step:last-child { border-right:1px solid rgba(179,136,255,.2); }
+        .kc-step:hover { background:rgba(179,136,255,.05); }
+        .kc-step::after { content:'▶'; position:absolute; right:-11px; top:50%; transform:translateY(-50%); color:#b388ff; font-size:.7rem; z-index:2; }
+        .kc-step:last-child::after { display:none; }
+        .kc-num { font-size:.58rem; color:rgba(179,136,255,.5); letter-spacing:.15em; margin-bottom:5px; }
+        .kc-icon { font-size:1.3rem; margin-bottom:5px; }
+        .kc-name { font-weight:bold; color:#fff; font-size:.82rem; margin-bottom:4px; }
+        .kc-desc { font-size:.65rem; color:#b388ff; line-height:1.5; }
+        .mal-table { width:100%; border-collapse:collapse; font-size:.85rem; margin-top:12px; }
+        .mal-table th { color:#b388ff; text-align:left; padding:9px 12px; border-bottom:1px solid rgba(179,136,255,.3); background:rgba(179,136,255,.06); font-size:.72rem; letter-spacing:.1em; }
+        .mal-table td { padding:9px 12px; border-bottom:1px solid rgba(179,136,255,.07); color:#fff; opacity:.9; vertical-align:top; }
+        .mal-table tr:hover td { background:rgba(179,136,255,.02); }
+        .mal-table .mico { font-size:1.1rem; }
+        .mal-table .mname { color:#b388ff; font-weight:bold; }
+        .mal-table .mbadge { display:inline-block; font-size:.6rem; padding:1px 6px; border:1px solid; }
+        .mbadge-crit { color:#ff5f7a; border-color:#ff5f7a; }
+        .mbadge-alto { color:#ff6a00; border-color:#ff6a00; }
+        .mbadge-med  { color:#ffdd00; border-color:#ffdd00; }
+        .social-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:12px; }
+        .social-card { border:1px solid rgba(179,136,255,.2); padding:14px; background:rgba(179,136,255,.02); transition:all .2s; }
+        .social-card:hover { border-color:rgba(179,136,255,.5); transform:translateY(-2px); }
+        .social-card .sc-icon { font-size:1.5rem; margin-bottom:6px; }
+        .social-card .sc-name { font-weight:bold; color:#b388ff; font-size:.88rem; margin-bottom:4px; }
+        .social-card .sc-desc { font-size:.77rem; color:rgba(255,255,255,.7); line-height:1.55; }
+        .phish-mock { border:1px solid rgba(255,95,122,.3); overflow:hidden; margin-top:12px; }
+        .phish-bar { background:rgba(0,0,0,.6); padding:6px 12px; font-size:.65rem; color:rgba(179,136,255,.5); border-bottom:1px solid rgba(255,95,122,.2); }
+        .phish-body { padding:18px; background:rgba(0,0,0,.45); font-size:.83rem; }
+        .phish-field { margin-bottom:8px; display:flex; gap:8px; flex-wrap:wrap; }
+        .phish-label { color:rgba(255,255,255,.5); min-width:55px; }
+        .phish-val { color:#fff; }
+        .phish-val.warn { color:#ff5f7a; }
+        .phish-body-text { margin:12px 0; color:rgba(255,255,255,.8); line-height:1.65; font-size:.82rem; }
+        .phish-link { color:#3b9dff; text-decoration:underline; }
+        .phish-btn { display:inline-block; background:#ff5f7a; color:#fff; padding:8px 20px; font-size:.85rem; font-weight:bold; margin:8px 0; letter-spacing:.05em; }
+        .phish-warnings { margin-top:14px; display:flex; flex-direction:column; gap:5px; }
+        .phish-warn { font-size:.75rem; color:#ff5f7a; padding:4px 0; border-top:1px solid rgba(255,95,122,.1); }
+        .phish-warn i { margin-right:6px; }
+        .impact-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+        .impact-row { display:flex; align-items:center; gap:12px; }
+        .impact-label { min-width:130px; font-size:.8rem; color:rgba(255,255,255,.8); }
+        .impact-bar-wrap { flex:1; background:rgba(255,255,255,.06); height:20px; position:relative; border:1px solid rgba(179,136,255,.1); }
+        .impact-bar { height:100%; display:flex; align-items:center; padding-left:8px; font-size:.68rem; font-weight:bold; transition:width .4s; }
+        .impact-pct { margin-left:auto; min-width:36px; text-align:right; font-size:.8rem; font-weight:bold; }
+        .mit-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:12px; }
+        .mit-card { border:1px solid rgba(179,136,255,.2); padding:18px 16px; background:rgba(179,136,255,.02); text-align:center; transition:all .2s; }
+        .mit-card:hover { border-color:rgba(179,136,255,.5); transform:translateY(-2px); }
+        .mit-card .mi-icon { font-size:1.8rem; margin-bottom:10px; }
+        .mit-card .mi-title { font-weight:bold; color:#b388ff; font-size:.9rem; margin-bottom:6px; }
+        .mit-card .mi-desc { font-size:.78rem; color:rgba(255,255,255,.7); line-height:1.6; }
+        .mit-card .mi-stat { font-size:1.3rem; font-weight:900; color:#b388ff; margin-top:8px; }
+        .mit-card .mi-stat-lbl { font-size:.62rem; color:rgba(179,136,255,.6); }
+        .svg-container { border:1px solid rgba(179,136,255,.25); padding:16px; overflow-x:auto; text-align:center; background:rgba(0,0,0,.3); margin-top:12px; }
+        @media(max-width:600px){
+            .kc-wrap { flex-direction:column; }
+            .kc-step::after { content:'▼'; right:50%; bottom:-11px; top:auto; transform:translateX(50%); }
+            .kc-step { border-right:1px solid rgba(179,136,255,.2); border-bottom:none; }
+            .kc-step:last-child { border-bottom:1px solid rgba(179,136,255,.2); }
+        }
+    </style>
+</head>
+<body>
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
+
+<main>
+    <a href="../actividades.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Actividades</a>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-diagram-project"></i> Actividad 14 — Ciberseguridad en una mirada</h2>
+        <div class="info-box">
+            <p><strong>CNO IV — Programación WAP</strong></p>
+            <p><strong>Alumna:</strong> Tristán Rivera Magdalena Yesenia — 174702 &nbsp;|&nbsp; <strong>Grupo:</strong> T37A</p>
+            <p><strong>Docente:</strong> Mtro. Servando López Contreras &nbsp;|&nbsp; <strong>Parcial:</strong> 2</p>
+            <p><strong>Tema elegido:</strong> Módulo 2 — Ataques, conceptos y técnicas (Introducción a la Ciberseguridad, Cisco Networking Academy)</p>
+        </div>
+        <p style="color:rgba(255,255,255,.85);line-height:1.85;font-size:.92rem;margin-top:16px;">
+            Infografía profesional que explica de forma visual, sintética y estratégica el Módulo 2 del curso de Cisco: qué es un ciberataque, sus principales tipos, la cadena de ataque (Cyber Kill Chain), la taxonomía del malware, la ingeniería social, la anatomía de un correo de phishing, el nivel de impacto por tipo de ataque, y las estrategias de mitigación — con enfoque estratégico de qué es, por qué es relevante, qué riesgos implica y cómo se mitiga cada amenaza.
+        </p>
+    </section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-shield-alt"></i> 01 — ¿Qué es un Ciberataque?</h2>
+    <div class="threat-banner">
+        <div class="tb-icon">⚡</div>
+        <div class="tb-text">Las amenazas cibernéticas evolucionan constantemente — el conocimiento es la primera línea de defensa. <strong>THREAT_LEVEL: CRITICAL</strong></div>
+        <div class="tb-badge">// MÓDULO 02</div>
+    </div>
+    <p style="color:rgba(255,255,255,.85);line-height:1.85;font-size:.92rem;">
+        Un <strong style="color:#b388ff">ciberataque</strong> es cualquier intento deliberado de acceder, dañar, robar o destruir información de sistemas o redes sin autorización. Los atacantes pueden ser individuos, grupos organizados o incluso <strong style="color:#ff5f7a">Estados-nación</strong>. Comprender sus técnicas y motivaciones es esencial para construir defensas efectivas.
+    </p>
+    <br>
+    <p style="color:rgba(255,255,255,.85);line-height:1.85;font-size:.92rem;">
+        Los ataques modernos combinan múltiples vectores y explotan tanto vulnerabilidades técnicas como el <strong style="color:#ff5f7a">factor humano</strong> — la concienciación es tan importante como la tecnología. Ningún sistema es inmune; la gestión del riesgo y la respuesta rápida marcan la diferencia entre un incidente menor y una brecha catastrófica.
+    </p>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-biohazard"></i> 02 — Principales Tipos de Ataque</h2>
+    <div class="attack-grid">
+        <div class="attack-card red">
+            <div class="ac-icon">🦠</div>
+            <div class="ac-name">MALWARE</div>
+            <div class="ac-desc">Software malicioso diseñado para infiltrar y dañar sistemas. Incluye virus, gusanos, troyanos, ransomware y spyware. Se propaga por descargas, correos y dispositivos USB.</div>
+        </div>
+        <div class="attack-card orange">
+            <div class="ac-icon">🎣</div>
+            <div class="ac-name">PHISHING</div>
+            <div class="ac-desc">Correos o sitios falsos que simulan entidades legítimas para robar credenciales, datos bancarios o instalar malware. Variantes: spear phishing, whaling, vishing.</div>
+        </div>
+        <div class="attack-card red">
+            <div class="ac-icon">💥</div>
+            <div class="ac-name">DoS / DDoS</div>
+            <div class="ac-desc">Saturan servidores con tráfico masivo hasta hacerlos inoperables para usuarios legítimos. Los DDoS usan botnets de miles de dispositivos comprometidos.</div>
+        </div>
+        <div class="attack-card cyan">
+            <div class="ac-icon">🕵</div>
+            <div class="ac-name">SNIFFING / MitM</div>
+            <div class="ac-desc">Interceptación de comunicaciones. El atacante puede espiar o modificar datos en tránsito sin que las víctimas lo detecten. Común en redes Wi-Fi públicas.</div>
+        </div>
+        <div class="attack-card yellow">
+            <div class="ac-icon">💉</div>
+            <div class="ac-name">INYECCIÓN SQL</div>
+            <div class="ac-desc">Código malicioso en formularios web para manipular bases de datos y robar registros confidenciales. Una de las vulnerabilidades más prevalentes (OWASP Top 10).</div>
+        </div>
+        <div class="attack-card red">
+            <div class="ac-icon">🔐</div>
+            <div class="ac-name">RANSOMWARE</div>
+            <div class="ac-desc">Cifra los archivos de la víctima y exige pago en criptomonedas para restaurar el acceso. Causa pérdidas millonarias globalmente. Notable: WannaCry, LockBit, Ryuk.</div>
+        </div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-link"></i> 03 — Cadena de Ataque — Cyber Kill Chain</h2>
+    <p style="font-size:.85rem;color:rgba(255,255,255,.7);margin-bottom:6px;">Marco desarrollado por <strong style="color:#b388ff">Lockheed Martin</strong> para describir las fases de un ataque cibernético avanzado (APT). Interrumpir cualquier eslabón detiene el ataque.</p>
+    <div class="kc-wrap">
+        <div class="kc-step">
+            <div class="kc-num">01</div>
+            <div class="kc-icon">🔍</div>
+            <div class="kc-name">Reconocimiento</div>
+            <div class="kc-desc">OSINT, escaneo de puertos, recolección de emails y datos de empleados. Pasivo o activo.</div>
+        </div>
+        <div class="kc-step">
+            <div class="kc-num">02</div>
+            <div class="kc-icon">⚙️</div>
+            <div class="kc-name">Armado</div>
+            <div class="kc-desc">Crear o adaptar exploit + payload. Weaponize documentos Office, PDF maliciosos.</div>
+        </div>
+        <div class="kc-step">
+            <div class="kc-num">03</div>
+            <div class="kc-icon">📧</div>
+            <div class="kc-name">Entrega</div>
+            <div class="kc-desc">Email de phishing, sitio web comprometido, USB infectado, ataque watering hole.</div>
+        </div>
+        <div class="kc-step">
+            <div class="kc-num">04</div>
+            <div class="kc-icon">💣</div>
+            <div class="kc-name">Explotación</div>
+            <div class="kc-desc">El exploit ejecuta código aprovechando una vulnerabilidad del sistema o del usuario.</div>
+        </div>
+        <div class="kc-step">
+            <div class="kc-num">05</div>
+            <div class="kc-icon">🔧</div>
+            <div class="kc-name">Instalación</div>
+            <div class="kc-desc">Persistencia: backdoor, rootkit, cron job malicioso, modificación del registro.</div>
+        </div>
+        <div class="kc-step">
+            <div class="kc-num">06</div>
+            <div class="kc-icon">📡</div>
+            <div class="kc-name">C&amp;C</div>
+            <div class="kc-desc">Canal de comando y control. El atacante controla el sistema comprometido remotamente.</div>
+        </div>
+        <div class="kc-step" style="border-right:1px solid rgba(179,136,255,.2);">
+            <div class="kc-num">07</div>
+            <div class="kc-icon">🎯</div>
+            <div class="kc-name">Objetivo</div>
+            <div class="kc-desc">Exfiltración de datos, destrucción, cifrado ransomware o movimiento lateral.</div>
+        </div>
+    </div>
+    <div class="svg-container" style="margin-top:16px;">
+        <svg viewBox="0 0 780 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:780px;font-family:'Courier New',monospace;">
+            <rect width="780" height="120" fill="#0a0714"/>
+            <defs>
+                <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#b388ff"/>
+                </marker>
+            </defs>
+            <line x1="88" y1="60" x2="108" y2="60" stroke="#b388ff" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="198" y1="60" x2="218" y2="60" stroke="#b388ff" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="308" y1="60" x2="328" y2="60" stroke="#b388ff" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="418" y1="60" x2="438" y2="60" stroke="#b388ff" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="528" y1="60" x2="548" y2="60" stroke="#b388ff" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="638" y1="60" x2="658" y2="60" stroke="#ff5f7a" stroke-width="1.5" marker-end="url(#arr)"/>
+            <rect x="5" y="30" width="83" height="60" rx="3" fill="#0d1a10" stroke="#b388ff" stroke-width="1"/>
+            <text x="46" y="54" text-anchor="middle" fill="#b388ff" font-size="14">🔍</text>
+            <text x="46" y="68" text-anchor="middle" fill="#b388ff" font-size="7" font-weight="bold">RECON</text>
+            <text x="46" y="80" text-anchor="middle" fill="#9a8cc2" font-size="6">Reconocimiento</text>
+            <rect x="115" y="30" width="83" height="60" rx="3" fill="#0d1a10" stroke="#b388ff" stroke-width="1"/>
+            <text x="156" y="54" text-anchor="middle" fill="#b388ff" font-size="14">⚙️</text>
+            <text x="156" y="68" text-anchor="middle" fill="#b388ff" font-size="7" font-weight="bold">WEAPON</text>
+            <text x="156" y="80" text-anchor="middle" fill="#9a8cc2" font-size="6">Armado</text>
+            <rect x="225" y="30" width="83" height="60" rx="3" fill="#0d1a10" stroke="#b388ff" stroke-width="1"/>
+            <text x="266" y="54" text-anchor="middle" fill="#b388ff" font-size="14">📧</text>
+            <text x="266" y="68" text-anchor="middle" fill="#b388ff" font-size="7" font-weight="bold">DELIVERY</text>
+            <text x="266" y="80" text-anchor="middle" fill="#9a8cc2" font-size="6">Entrega</text>
+            <rect x="335" y="30" width="83" height="60" rx="3" fill="#1a0d04" stroke="#ff6a00" stroke-width="1"/>
+            <text x="376" y="54" text-anchor="middle" fill="#ff6a00" font-size="14">💣</text>
+            <text x="376" y="68" text-anchor="middle" fill="#ff6a00" font-size="7" font-weight="bold">EXPLOIT</text>
+            <text x="376" y="80" text-anchor="middle" fill="#ff9966" font-size="6">Explotación</text>
+            <rect x="445" y="30" width="83" height="60" rx="3" fill="#1a0d04" stroke="#ff6a00" stroke-width="1"/>
+            <text x="486" y="54" text-anchor="middle" fill="#ff6a00" font-size="14">🔧</text>
+            <text x="486" y="68" text-anchor="middle" fill="#ff6a00" font-size="7" font-weight="bold">INSTALL</text>
+            <text x="486" y="80" text-anchor="middle" fill="#ff9966" font-size="6">Instalación</text>
+            <rect x="555" y="30" width="83" height="60" rx="3" fill="#1a0408" stroke="#ff5f7a" stroke-width="1"/>
+            <text x="596" y="54" text-anchor="middle" fill="#ff5f7a" font-size="14">📡</text>
+            <text x="596" y="68" text-anchor="middle" fill="#ff5f7a" font-size="7" font-weight="bold">C&amp;C</text>
+            <text x="596" y="80" text-anchor="middle" fill="#ff6677" font-size="6">Comando y Control</text>
+            <rect x="665" y="20" width="110" height="80" rx="3" fill="#200408" stroke="#ff5f7a" stroke-width="2"/>
+            <text x="720" y="52" text-anchor="middle" fill="#ff5f7a" font-size="18">🎯</text>
+            <text x="720" y="70" text-anchor="middle" fill="#ff5f7a" font-size="8" font-weight="bold">OBJECTIVE</text>
+            <text x="720" y="84" text-anchor="middle" fill="#ff6677" font-size="6">Robo / Daño / Cifrado</text>
+            <text x="390" y="15" text-anchor="middle" fill="#9a8cc2" font-size="7" letter-spacing="2">CYBER KILL CHAIN — LOCKHEED MARTIN</text>
+        </svg>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-virus"></i> 04 — Tipos de Malware</h2>
+    <table class="mal-table">
+        <tr><th>TIPO</th><th>AMENAZA</th><th>DESCRIPCIÓN</th><th>IMPACTO</th></tr>
+        <tr>
+            <td class="mico">🦠</td>
+            <td class="mname">Virus</td>
+            <td style="font-size:.82rem;color:rgba(255,255,255,.8);">Se adjunta a archivos legítimos y se replica al ejecutarlos, corrompiendo datos y programas del sistema.</td>
+            <td><span class="mal-table mbadge mbadge-alto">ALTO</span></td>
+        </tr>
+        <tr>
+            <td class="mico">🐛</td>
+            <td class="mname">Gusano</td>
+            <td style="font-size:.82rem;color:rgba(255,255,255,.8);">Se autopropaga por redes sin intervención humana, consumiendo recursos y colapsando infraestructuras.</td>
+            <td><span class="mal-table mbadge mbadge-alto">ALTO</span></td>
+        </tr>
+        <tr>
+            <td class="mico">🐴</td>
+            <td class="mname">Troyano</td>
+            <td style="font-size:.82rem;color:rgba(255,255,255,.8);">Aparenta ser software legítimo pero abre puertas traseras al sistema para acceso remoto no autorizado.</td>
+            <td><span class="mal-table mbadge mbadge-crit">CRÍTICO</span></td>
+        </tr>
+        <tr>
+            <td class="mico">🔒</td>
+            <td class="mname">Ransomware</td>
+            <td style="font-size:.82rem;color:rgba(255,255,255,.8);">Cifra archivos y solicita rescate en criptomonedas anónimas. Notable: WannaCry causó daños por $4B globales.</td>
+            <td><span class="mal-table mbadge mbadge-crit">CRÍTICO</span></td>
+        </tr>
+        <tr>
+            <td class="mico">👁️</td>
+            <td class="mname">Spyware</td>
+            <td style="font-size:.82rem;color:rgba(255,255,255,.8);">Recopila contraseñas, hábitos y datos personales enviándolos al atacante silenciosamente en segundo plano.</td>
+            <td><span class="mal-table mbadge mbadge-alto">ALTO</span></td>
+        </tr>
+        <tr>
+            <td class="mico">🫚</td>
+            <td class="mname">Rootkit</td>
+            <td style="font-size:.82rem;color:rgba(255,255,255,.8);">Oculta la presencia de malware con privilegios de administrador. Extremadamente difícil de detectar y eliminar.</td>
+            <td><span class="mal-table mbadge mbadge-crit">CRÍTICO</span></td>
+        </tr>
+    </table>
+    <div class="svg-container" style="margin-top:16px;">
+        <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:700px;font-family:'Courier New',monospace;">
+            <rect width="700" height="180" fill="#0a0714"/>
+            <defs><pattern id="g2" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M 30 0 L 0 0 0 30" fill="none" stroke="#b388ff06" stroke-width="1"/></pattern></defs>
+            <rect width="700" height="180" fill="url(#g2)"/>
+            <text x="350" y="20" text-anchor="middle" fill="#9a8cc2" font-size="8" letter-spacing="2">VECTOR DE PROPAGACIÓN DEL MALWARE</text>
+            <rect x="290" y="55" width="120" height="80" rx="4" fill="#0d1a10" stroke="#b388ff" stroke-width="1.5"/>
+            <text x="350" y="90" text-anchor="middle" fill="#b388ff" font-size="20">💻</text>
+            <text x="350" y="108" text-anchor="middle" fill="#b388ff" font-size="8" font-weight="bold">VÍCTIMA</text>
+            <text x="350" y="122" text-anchor="middle" fill="#9a8cc2" font-size="7">Sistema comprometido</text>
+            <rect x="30" y="30" width="95" height="55" rx="3" fill="#1a0408" stroke="#ff5f7a" stroke-width="1"/>
+            <text x="77" y="52" text-anchor="middle" fill="#ff5f7a" font-size="14">📧</text>
+            <text x="77" y="65" text-anchor="middle" fill="#ff4466" font-size="7" font-weight="bold">PHISHING EMAIL</text>
+            <text x="77" y="75" text-anchor="middle" fill="#ff6677" font-size="6">Adjunto malicioso</text>
+            <line x1="125" y1="57" x2="288" y2="90" stroke="#ff5f7a" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+            <rect x="30" y="110" width="95" height="55" rx="3" fill="#1a0d04" stroke="#ff6a00" stroke-width="1"/>
+            <text x="77" y="132" text-anchor="middle" fill="#ff6a00" font-size="14">💾</text>
+            <text x="77" y="145" text-anchor="middle" fill="#ff8833" font-size="7" font-weight="bold">USB INFECTADO</text>
+            <text x="77" y="155" text-anchor="middle" fill="#ff9966" font-size="6">Baiting / Drop attack</text>
+            <line x1="125" y1="137" x2="288" y2="110" stroke="#ff6a00" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+            <rect x="575" y="30" width="95" height="55" rx="3" fill="#1a0d04" stroke="#ffdd00" stroke-width="1"/>
+            <text x="622" y="52" text-anchor="middle" fill="#ffdd00" font-size="14">🌐</text>
+            <text x="622" y="65" text-anchor="middle" fill="#ffee44" font-size="7" font-weight="bold">SITIO WEB</text>
+            <text x="622" y="75" text-anchor="middle" fill="#ffee88" font-size="6">Drive-by download</text>
+            <line x1="575" y1="57" x2="412" y2="90" stroke="#ffdd00" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+            <rect x="575" y="110" width="95" height="55" rx="3" fill="#0d1208" stroke="#3b9dff" stroke-width="1"/>
+            <text x="622" y="132" text-anchor="middle" fill="#3b9dff" font-size="14">📡</text>
+            <text x="622" y="145" text-anchor="middle" fill="#00dfff" font-size="7" font-weight="bold">RED / WORM</text>
+            <text x="622" y="155" text-anchor="middle" fill="#88eeff" font-size="6">Autopropagación</text>
+            <line x1="575" y1="137" x2="412" y2="110" stroke="#3b9dff" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+            <rect x="270" y="148" width="160" height="26" rx="3" fill="#200408" stroke="#ff5f7a" stroke-width="1.5"/>
+            <text x="350" y="165" text-anchor="middle" fill="#ff5f7a" font-size="8" font-weight="bold">C&amp;C → EXFILTRACIÓN / CIFRADO</text>
+            <line x1="350" y1="135" x2="350" y2="148" stroke="#ff5f7a" stroke-width="1.5" stroke-dasharray="3,2"/>
+        </svg>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-user-secret"></i> 05 — Ingeniería Social</h2>
+    <p style="font-size:.85rem;color:rgba(255,255,255,.7);margin-bottom:4px;">La ingeniería social explota la psicología humana, no los sistemas técnicos. El <strong style="color:#b388ff">eslabón más débil</strong> siempre es el factor humano.</p>
+    <div class="social-grid">
+        <div class="social-card">
+            <div class="sc-icon">🎣</div>
+            <div class="sc-name">Phishing</div>
+            <div class="sc-desc">Correos masivos que simulan bancos o servicios para robar credenciales. Alta escala, baja personalización.</div>
+        </div>
+        <div class="social-card">
+            <div class="sc-icon">🎯</div>
+            <div class="sc-name">Spear Phishing</div>
+            <div class="sc-desc">Ataque dirigido y personalizado con datos reales de la víctima. Muy difícil de detectar por su precisión.</div>
+        </div>
+        <div class="social-card">
+            <div class="sc-icon">📞</div>
+            <div class="sc-name">Vishing</div>
+            <div class="sc-desc">Engaño telefónico suplantando soporte técnico, bancos u organismos oficiales. Usa urgencia y autoridad.</div>
+        </div>
+        <div class="social-card">
+            <div class="sc-icon">💾</div>
+            <div class="sc-name">Baiting</div>
+            <div class="sc-desc">USB infectado dejado intencionalmente en estacionamientos u oficinas para que la víctima lo conecte por curiosidad.</div>
+        </div>
+        <div class="social-card">
+            <div class="sc-icon">🤝</div>
+            <div class="sc-name">Pretexting</div>
+            <div class="sc-desc">Historia falsa elaborada para ganarse la confianza y obtener información sensible. Suplantación de identidad verbal.</div>
+        </div>
+        <div class="social-card">
+            <div class="sc-icon">🚪</div>
+            <div class="sc-name">Tailgating</div>
+            <div class="sc-desc">Acceso físico no autorizado siguiendo a personas autorizadas a zonas restringidas sin usar credenciales.</div>
+        </div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-envelope-open-text"></i> 06 — Anatomía de un Correo de Phishing</h2>
+    <div class="phish-mock">
+        <div class="phish-bar">
+            <span style="color:#ff5f7a">●</span> <span style="color:#ffdd00">●</span> <span style="color:#b388ff">●</span>
+            &nbsp; EJEMPLO EDUCATIVO — CORREO MALICIOSO IDENTIFICADO
+        </div>
+        <div class="phish-body">
+            <div class="phish-field">
+                <span class="phish-label">De:</span>
+                <span class="phish-val warn">soporte@bancoseguro-noreply.xyz</span>
+                <span style="font-size:.68rem;color:#ff5f7a;border:1px solid #ff5f7a;padding:1px 6px;margin-left:4px;">⚠ Dominio sospechoso</span>
+            </div>
+            <div class="phish-field">
+                <span class="phish-label">Asunto:</span>
+                <span class="phish-val">🚨 <strong style="color:#ff5f7a">URGENTE:</strong> Su cuenta será BLOQUEADA en 24 horas</span>
+            </div>
+            <div class="phish-field">
+                <span class="phish-label">Para:</span>
+                <span class="phish-val">usuario@empresa.com</span>
+            </div>
+            <hr style="border-color:rgba(179,136,255,.1);margin:10px 0;">
+            <div class="phish-body-text">
+                Estimado cliente, hemos detectado actividad sospechosa en su cuenta. Para evitar el bloqueo permanente, debe verificar su identidad de forma inmediata haciendo clic en el siguiente enlace seguro:
+            </div>
+            <div style="margin:6px 0 10px;font-size:.78rem;">
+                <span class="phish-link">http://banco-seguro-verificacion.tk/login?token=a7f3k2</span>
+                <span style="font-size:.65rem;color:#ff5f7a;margin-left:8px;">← URL maliciosa</span>
+            </div>
+            <div class="phish-btn">VERIFICAR AHORA →</div>
+            <div class="phish-warnings">
+                <div class="phish-warn"><i class="fas fa-exclamation-triangle"></i>Dominio del remitente no coincide con el banco real (bancoseguro-noreply.xyz ≠ banco.com)</div>
+                <div class="phish-warn"><i class="fas fa-exclamation-triangle"></i>Lenguaje de urgencia extrema diseñado para presionar al usuario a actuar sin reflexionar</div>
+                <div class="phish-warn"><i class="fas fa-exclamation-triangle"></i>URL con dominio .tk (sospechoso) que no pertenece a ninguna entidad financiera legítima</div>
+                <div class="phish-warn"><i class="fas fa-exclamation-triangle"></i>Solicita clic en enlace externo en lugar de acceder directamente al portal oficial del banco</div>
+            </div>
+        </div>
+    </div>
+    <div class="terminal" style="margin-top:14px;">// SEÑALES DE ALERTA — CÓMO IDENTIFICAR UN PHISHING
+
+[!] Remitente:  Dominio genérico o con errores tipográficos
+                bancoseguro-noreply.xyz  ≠  banco.com
+
+[!] Asunto:     Urgencia artificial o amenazas ("BLOQUEADA", "SUSPENDIDA")
+                Mayúsculas excesivas, emojis de alerta
+
+[!] Enlace:     Hover sobre link → URL no coincide con la entidad
+                Dominios .tk .xyz .top — nunca dominio oficial del banco
+
+[!] Solicitud:  Pide credenciales, número de tarjeta o datos personales
+                Ningún banco real solicita datos por correo
+
+[+] ACCIÓN:     No hacer clic. Reportar al equipo de seguridad.
+                Verificar directamente en el sitio oficial del banco.</div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-chart-bar"></i> 07 — Nivel de Impacto por Tipo de Ataque</h2>
+    <div class="impact-list">
+        <div class="impact-row">
+            <div class="impact-label">🔐 Ransomware</div>
+            <div class="impact-bar-wrap">
+                <div class="impact-bar" style="width:95%;background:linear-gradient(90deg,#ff5f7a,#ff4466);">
+                    <span style="color:#fff;font-size:.68rem;">Cifrado total + extorsión</span>
+                </div>
+            </div>
+            <div class="impact-pct" style="color:#ff5f7a;">95%</div>
+        </div>
+        <div class="impact-row">
+            <div class="impact-label">🤝 Ing. Social</div>
+            <div class="impact-bar-wrap">
+                <div class="impact-bar" style="width:90%;background:linear-gradient(90deg,#ff4400,#ff6a00);">
+                    <span style="color:#fff;font-size:.68rem;">Factor humano explotado</span>
+                </div>
+            </div>
+            <div class="impact-pct" style="color:#ff6a00;">90%</div>
+        </div>
+        <div class="impact-row">
+            <div class="impact-label">🎣 Phishing</div>
+            <div class="impact-bar-wrap">
+                <div class="impact-bar" style="width:88%;background:linear-gradient(90deg,#ff6a00,#ffaa00);">
+                    <span style="color:#fff;font-size:.68rem;">Robo de credenciales</span>
+                </div>
+            </div>
+            <div class="impact-pct" style="color:#ffaa00;">88%</div>
+        </div>
+        <div class="impact-row">
+            <div class="impact-label">💥 DDoS</div>
+            <div class="impact-bar-wrap">
+                <div class="impact-bar" style="width:80%;background:linear-gradient(90deg,#ffaa00,#ffdd00);">
+                    <span style="color:#0a0714;font-size:.68rem;">Interrupción de servicio</span>
+                </div>
+            </div>
+            <div class="impact-pct" style="color:#ffdd00;">80%</div>
+        </div>
+        <div class="impact-row">
+            <div class="impact-label">💉 Inyección SQL</div>
+            <div class="impact-bar-wrap">
+                <div class="impact-bar" style="width:75%;background:linear-gradient(90deg,#00aa44,#b388ff);">
+                    <span style="color:#0a0714;font-size:.68rem;">Exfiltración de BD</span>
+                </div>
+            </div>
+            <div class="impact-pct" style="color:#b388ff;">75%</div>
+        </div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-shield-alt"></i> 08 — Estrategias de Mitigación</h2>
+    <div class="mit-grid">
+        <div class="mit-card">
+            <div class="mi-icon">🔄</div>
+            <div class="mi-title">Actualizaciones</div>
+            <div class="mi-desc">Mantener sistemas y software actualizados. Los parches corrigen vulnerabilidades explotadas activamente en ataques. Gestión de parches automatizada recomendada.</div>
+        </div>
+        <div class="mit-card">
+            <div class="mi-icon">🔑</div>
+            <div class="mi-title">Autenticación MFA</div>
+            <div class="mi-desc">Múltiple factor de autenticación reduce drásticamente el acceso no autorizado por credenciales robadas o filtradas.</div>
+            <div class="mi-stat">99%</div>
+            <div class="mi-stat-lbl">reducción de riesgo</div>
+        </div>
+        <div class="mit-card">
+            <div class="mi-icon">🎓</div>
+            <div class="mi-title">Concientización</div>
+            <div class="mi-desc">Capacitar al personal para identificar phishing, ingeniería social y prácticas de uso seguro. El factor humano es la primera línea de defensa.</div>
+        </div>
+        <div class="mit-card">
+            <div class="mi-icon">💾</div>
+            <div class="mi-title">Respaldos 3-2-1</div>
+            <div class="mi-desc"><strong style="color:#b388ff">3</strong> copias de los datos, <strong style="color:#b388ff">2</strong> medios distintos, <strong style="color:#b388ff">1</strong> fuera del sitio. Esencial para recuperarse de un ataque de ransomware sin pagar rescate.</div>
+        </div>
+    </div>
+    <div class="svg-container" style="margin-top:16px;">
+        <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:680px;font-family:'Courier New',monospace;">
+            <rect width="680" height="200" fill="#0a0714"/>
+            <text x="340" y="18" text-anchor="middle" fill="#9a8cc2" font-size="8" letter-spacing="2">DEFENSA EN PROFUNDIDAD — DEFENSE IN DEPTH</text>
+            <rect x="10" y="28" width="660" height="162" rx="6" fill="none" stroke="#b388ff" stroke-width="1" stroke-dasharray="6,3"/>
+            <text x="30" y="45" fill="#b388ff" font-size="8">🌐 PERÍMETRO — Firewall · IDS/IPS · WAF</text>
+            <rect x="35" y="52" width="610" height="128" rx="5" fill="none" stroke="#3b9dff" stroke-width="1" stroke-dasharray="5,3"/>
+            <text x="55" y="67" fill="#3b9dff" font-size="8">📡 RED — Segmentación · VPN · Zero Trust</text>
+            <rect x="60" y="76" width="560" height="94" rx="4" fill="none" stroke="#ffdd00" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="80" y="91" fill="#ffdd00" font-size="8">💻 ENDPOINT — Antivirus · EDR · Parches</text>
+            <rect x="85" y="100" width="510" height="60" rx="4" fill="none" stroke="#ff6a00" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="105" y="115" fill="#ff6a00" font-size="8">⚙️ APLICACIÓN — MFA · Input Validation · SAST</text>
+            <rect x="110" y="124" width="460" height="28" rx="4" fill="rgba(255,95,122,.08)" stroke="#ff5f7a" stroke-width="1.5"/>
+            <text x="340" y="142" text-anchor="middle" fill="#ff5f7a" font-size="9" font-weight="bold">🔐 DATOS — Cifrado · Respaldos 3-2-1 · DLP</text>
+            <text x="655" y="110" text-anchor="end" fill="#9a8cc2" font-size="7">Capas de defensa</text>
+            <text x="655" y="120" text-anchor="end" fill="#9a8cc2" font-size="7">superpuestas →</text>
+        </svg>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-flag-checkered"></i> 09 — Conclusión y Reflexión Técnica</h2>
+    <div class="concl-box green">
+        <h3>// CONCLUSIÓN EJECUTIVA</h3>
+        <p>El estudio del Módulo 02 de Cisco Networking Academy permitió comprender que el panorama de amenazas cibernéticas es amplio, dinámico y multivetorial. Los ciberataques ya no son exclusividad de actores sofisticados: herramientas como kits de phishing o ransomware-as-a-service (RaaS) han democratizado el crimen digital, poniendo capacidades avanzadas al alcance de atacantes con escasos conocimientos técnicos.</p>
+        <p>La <strong>Cyber Kill Chain</strong> demuestra que un ataque es un proceso secuencial con múltiples puntos de intervención. Interrumpir cualquiera de sus siete fases es suficiente para detener el ataque en su totalidad, lo que fundamenta la estrategia de <strong>defensa en profundidad</strong>: múltiples capas independientes de control de seguridad.</p>
+        <p>El hallazgo más revelador del módulo es que la <strong>ingeniería social</strong> —explotar el factor humano— tiene una tasa de éxito del 90%, superior a cualquier vulnerabilidad técnica. Esto evidencia que la tecnología sola no es suficiente: la concientización y la cultura de seguridad son componentes críticos de cualquier estrategia defensiva efectiva.</p>
+    </div>
+    <div class="concl-box orange">
+        <h3>// REFLEXIÓN TÉCNICA — APRENDIZAJES</h3>
+        <p>Como estudiante de <strong>Programación WAP (CNO IV)</strong>, este módulo conectó los conceptos teóricos con la realidad operativa. Comprender la taxonomía del malware —desde virus simples hasta rootkits y ransomware avanzado— permite diseñar defensas más precisas y apropiadas para cada tipo de amenaza.</p>
+        <p>El análisis de la anatomía de un correo de phishing fue particularmente valioso: identificar señales como dominios sospechosos, lenguaje de urgencia y URLs maliciosas se convierte en una habilidad práctica de reconocimiento inmediato. Esta competencia, multiplicada por toda una organización a través de programas de concientización, puede reducir drásticamente la superficie de ataque humana.</p>
+        <p>La regla de respaldos <strong>3-2-1</strong> y la autenticación <strong>MFA</strong> son dos controles de bajo costo y alto impacto que deberían ser estándares mínimos en cualquier organización. La estadística del 99% de reducción de riesgo con MFA habilitado no es teórica: es el resultado medible de miles de incidentes reales analizados por Microsoft y Google.</p>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-book"></i> 10 — Referencias Técnicas (APA 7)</h2>
+    <ul class="refs-list">
+        <li><i class="fas fa-external-link-alt"></i>Cisco Networking Academy. (2023). <em>Introducción a la ciberseguridad: Módulo 2 — Ataques, conceptos y técnicas.</em> Cisco Systems. <a href="https://www.netacad.com" target="_blank">netacad.com</a></li>
+        <li><i class="fas fa-external-link-alt"></i>Stallings, W., &amp; Brown, L. (2018). <em>Computer security: Principles and practice</em> (4.ª ed.). Pearson Education.</li>
+        <li><i class="fas fa-external-link-alt"></i>Lockheed Martin. (2022). <em>The cyber kill chain framework.</em> <a href="https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html" target="_blank">lockheedmartin.com</a></li>
+        <li><i class="fas fa-external-link-alt"></i>MITRE Corporation. (2023). <em>ATT&amp;CK matrix for enterprise.</em> <a href="https://attack.mitre.org" target="_blank">attack.mitre.org</a></li>
+        <li><i class="fas fa-external-link-alt"></i>CISA. (2023). <em>Understanding ransomware threat actors.</em> Cybersecurity and Infrastructure Security Agency. <a href="https://www.cisa.gov/ransomware" target="_blank">cisa.gov/ransomware</a></li>
+        <li><i class="fas fa-external-link-alt"></i>OWASP Foundation. (2023). <em>OWASP Top Ten — A03: Injection.</em> <a href="https://owasp.org/Top10" target="_blank">owasp.org/Top10</a></li>
+        <li><i class="fas fa-external-link-alt"></i>Microsoft. (2023). <em>New research: MFA can block over 99.9% of account compromise attacks.</em> Microsoft Security Blog. <a href="https://www.microsoft.com/security/blog" target="_blank">microsoft.com/security/blog</a></li>
+        <li><i class="fas fa-external-link-alt"></i>Verizon. (2023). <em>Data Breach Investigations Report (DBIR) 2023.</em> <a href="https://www.verizon.com/business/resources/reports/dbir/" target="_blank">verizon.com/business/resources/reports/dbir/</a></li>
+    </ul>
+     <div style="text-align: center; margin: 40px 0; font-family: 'Courier New', monospace;">
+    <a href="../pdf/actividad14.pdf" 
+       download 
+       style="display: inline-block; 
+              padding: 12px 25px; 
+              border: 2px solid #b388ff; 
+              color: #b388ff; 
+              text-decoration: none; 
+              font-weight: bold; 
+              font-size: 1.1em; 
+              text-transform: uppercase; 
+              background: rgba(179, 136, 255, 0.1); 
+              box-shadow: 0 0 10px rgba(179, 136, 255, 0.2); 
+              transition: 0.3s;
+              letter-spacing: 1px;">
+        <i class="fas fa-file-pdf" style="margin-right: 10px;"></i> 
+        DESCARGAR INFOGRAFÍA COMPLETA (PDF)
+    </a>
+</div>
+</section>
+
+</main>
+</body>
+</html>
