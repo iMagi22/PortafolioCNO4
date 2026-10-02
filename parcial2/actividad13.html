@@ -155,7 +155,7 @@
             <p><strong>CNO IV — Programación WAP</strong></p>
             <p><strong>Alumna:</strong> Tristán Rivera Magdalena Yesenia — 174702 &nbsp;|&nbsp; <strong>Grupo:</strong> T37A</p>
             <p><strong>Docente:</strong> Mtro. Servando López Contreras &nbsp;|&nbsp; <strong>Parcial:</strong> 1</p>
-            <p><strong>Fecha:</strong> 10 de marzo de 2026</p>
+            <p><strong>Fecha:</strong> 08–09 de marzo de 2026</p>
             <div class="risk-badge">⚠ RIESGO GLOBAL: CRÍTICO</div>
         </div>
         <div class="stat-row">
@@ -279,7 +279,7 @@
     <h2><i class="fas fa-server"></i> 05 — Servicios Identificados (Nmap)</h2>
     <div class="evid-grid" style="grid-template-columns:1fr;max-width:620px;">
         <div class="evid-card">
-            <img src="img/act13/fig2-nmap.png" alt="Escaneo Nmap -sV">
+            <img src="parcial2/fig2-nmap.png" alt="Escaneo Nmap -sV">
             <div class="evid-cap"><b>Figura 2.</b> Escaneo Nmap -sV — servicios identificados en 192.168.0.8 (captura real).</div>
         </div>
     </div>
@@ -299,11 +299,11 @@
     <p style="color:rgba(255,255,255,.8);font-size:.88rem;line-height:1.8;">El escaneo con Nikto detectó un archivo <code>/readme.txt</code> accesible públicamente. Al consultarlo desde el navegador, reveló la contraseña del sistema en texto plano. En paralelo, <code>smbmap</code> confirmó una sesión SMB nula (sin autenticación) con el recurso <code>smbdata</code> en lectura/escritura.</p>
     <div class="evid-grid">
         <div class="evid-card">
-            <img src="img/act13/fig4-readme.png" alt="Contenido de readme.txt">
+            <img src="parcial2/fig4-readme.png" alt="Contenido de readme.txt">
             <div class="evid-cap"><b>Figura 13.</b> Contenido de readme.txt — credenciales expuestas en texto plano: "rootroot1".</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig3-smbmap.png" alt="smbmap enumeración SMB">
+            <img src="parcial2/fig3-smbmap.png" alt="smbmap enumeración SMB">
             <div class="evid-cap"><b>Figura 10.</b> smbmap — enumeración de recursos compartidos SMB con sesión nula.</div>
         </div>
     </div>
@@ -324,27 +324,27 @@
     <h3 style="color:#b388ff;font-size:.85rem;letter-spacing:.08em;margin-top:22px;margin-bottom:6px;">EVIDENCIA FOTOGRÁFICA DE LA CADENA COMPLETA</h3>
     <div class="evid-grid">
         <div class="evid-card">
-            <img src="img/act13/fig1-netdiscover.png" alt="netdiscover">
+            <img src="parcial2/fig1-netdiscover.png" alt="netdiscover">
             <div class="evid-cap"><b>Figura 1.</b> Escaneo ARP con netdiscover — host objetivo identificado en 192.168.0.8.</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig5-ftp-login.png" alt="FTP login exitoso">
+            <img src="parcial2/fig5-ftp-login.png" alt="FTP login exitoso">
             <div class="evid-cap"><b>Figura 16.</b> Acceso FTP exitoso con usuario smbuser y contraseña rootroot1.</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig6-authorized-keys.png" alt="Inyección de llave SSH vía FTP">
+            <img src="parcial2/fig6-authorized-keys.png" alt="Inyección de llave SSH vía FTP">
             <div class="evid-cap"><b>Figura 19.</b> Transferencia completada — authorized_keys inyectado en /home/smbuser/.ssh/.</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig7-ssh-banner.png" alt="Acceso SSH sin contraseña">
+            <img src="parcial2/fig7-ssh-banner.png" alt="Acceso SSH sin contraseña">
             <div class="evid-cap"><b>Figura 20.</b> Conexión SSH exitosa como smbuser — banner del servidor My File Server 1.</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig8-uname.png" alt="Kernel vulnerable">
+            <img src="parcial2/fig8-uname.png" alt="Kernel vulnerable">
             <div class="evid-cap"><b>Figura 21.</b> Resultado de uname -a — kernel 3.10.0-229.el7.x86_64 (vulnerable a CVE-2016-5195).</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig9-dirtycow-root.png" alt="Dirty COW root obtenido">
+            <img src="parcial2/fig9-dirtycow-root.png" alt="Dirty COW root obtenido">
             <div class="evid-cap"><b>Figura 28.</b> Ejecución de Dirty COW (CVE-2016-5195) — escalada de privilegios a root exitosa.</div>
         </div>
     </div>
