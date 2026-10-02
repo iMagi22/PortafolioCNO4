@@ -131,7 +131,7 @@
         .evid-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-top:12px; }
         .evid-card { border:1px solid rgba(179,136,255,.25); overflow:hidden; background:rgba(0,0,0,.25); display:flex; flex-direction:column; align-items:center; }
         .evid-card img { max-width:100%; width:auto; max-height:260px; display:block; margin:0 auto; image-rendering:-webkit-optimize-contrast; }
-        .evid-cap { padding:9px 12px; font-size:.72rem; color:rgba(179,136,255,.75); border-top:1px solid rgba(179,136,255,.15); background:rgba(0,0,0,.3); }
+        .evid-cap { padding:9px 12px; font-size:.72rem; color:rgba(179,136,255,.75); border-top:1px solid rgba(179,136,255,.15); background:rgba(0,0,0,.3); width:100%; box-sizing:border-box; }
         .evid-cap b { color:#b388ff; }
         @media(max-width:600px){
             .kill-chain{flex-direction:column;}
@@ -154,8 +154,8 @@
         <div class="info-box">
             <p><strong>CNO IV — Programación WAP</strong></p>
             <p><strong>Alumna:</strong> Tristán Rivera Magdalena Yesenia — 174702 &nbsp;|&nbsp; <strong>Grupo:</strong> T37A</p>
-            <p><strong>Docente:</strong> Mtro. Servando López Contreras &nbsp;|&nbsp; <strong>Parcial:</strong> 1</p>
-            <p><strong>Fecha:</strong> 08–09 de marzo de 2026</p>
+            <p><strong>Docente:</strong> Mtro. Servando López Contreras &nbsp;|&nbsp; <strong>Parcial:</strong> 2</p>
+            <p><strong>Fecha:</strong> 10 de marzo de 2026</p>
             <div class="risk-badge">⚠ RIESGO GLOBAL: CRÍTICO</div>
         </div>
         <div class="stat-row">
@@ -192,7 +192,7 @@
         <tr><td>Tipo de Evaluación</td><td class="val">Caja Negra (Black Box) — sin credenciales previas</td></tr>
         <tr><td>Metodología</td><td class="val">PTES — Penetration Testing Execution Standard</td></tr>
         <tr><td>Herramientas</td><td class="val">netdiscover · nmap · smbmap · nikto · ftp · ssh-keygen · wget · gcc · 40616.c</td></tr>
-        <tr><td>Período</td><td class="val">08–09 de marzo de 2026</td></tr>
+        <tr><td>Período</td><td class="val">10 de marzo de 2026</td></tr>
         <tr><td>Resultado</td><td class="val-crit">COMPROMISO TOTAL — ROOT OBTENIDO ✓</td></tr>
     </table>
 </section>
@@ -279,7 +279,7 @@
     <h2><i class="fas fa-server"></i> 05 — Servicios Identificados (Nmap)</h2>
     <div class="evid-grid" style="grid-template-columns:1fr;max-width:620px;">
         <div class="evid-card">
-            <img src="img/act13/fig2-nmap.png" alt="Escaneo Nmap -sV">
+            <img src="fig2-nmap.png" alt="Escaneo Nmap -sV">
             <div class="evid-cap"><b>Figura 2.</b> Escaneo Nmap -sV — servicios identificados en 192.168.0.8 (captura real).</div>
         </div>
     </div>
@@ -299,11 +299,11 @@
     <p style="color:rgba(255,255,255,.8);font-size:.88rem;line-height:1.8;">El escaneo con Nikto detectó un archivo <code>/readme.txt</code> accesible públicamente. Al consultarlo desde el navegador, reveló la contraseña del sistema en texto plano. En paralelo, <code>smbmap</code> confirmó una sesión SMB nula (sin autenticación) con el recurso <code>smbdata</code> en lectura/escritura.</p>
     <div class="evid-grid">
         <div class="evid-card">
-            <img src="img/act13/fig4-readme.png" alt="Contenido de readme.txt">
+            <img src="fig4-readme.png" alt="Contenido de readme.txt">
             <div class="evid-cap"><b>Figura 13.</b> Contenido de readme.txt — credenciales expuestas en texto plano: "rootroot1".</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig3-smbmap.png" alt="smbmap enumeración SMB">
+            <img src="fig3-smbmap.png" alt="smbmap enumeración SMB">
             <div class="evid-cap"><b>Figura 10.</b> smbmap — enumeración de recursos compartidos SMB con sesión nula.</div>
         </div>
     </div>
@@ -324,27 +324,27 @@
     <h3 style="color:#b388ff;font-size:.85rem;letter-spacing:.08em;margin-top:22px;margin-bottom:6px;">EVIDENCIA FOTOGRÁFICA DE LA CADENA COMPLETA</h3>
     <div class="evid-grid">
         <div class="evid-card">
-            <img src="img/act13/fig1-netdiscover.png" alt="netdiscover">
+            <img src="fig1-netdiscover.png" alt="netdiscover">
             <div class="evid-cap"><b>Figura 1.</b> Escaneo ARP con netdiscover — host objetivo identificado en 192.168.0.8.</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig5-ftp-login.png" alt="FTP login exitoso">
+            <img src="fig5-ftp-login.png" alt="FTP login exitoso">
             <div class="evid-cap"><b>Figura 16.</b> Acceso FTP exitoso con usuario smbuser y contraseña rootroot1.</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig6-authorized-keys.png" alt="Inyección de llave SSH vía FTP">
+            <img src="fig6-authorized-keys.png" alt="Inyección de llave SSH vía FTP">
             <div class="evid-cap"><b>Figura 19.</b> Transferencia completada — authorized_keys inyectado en /home/smbuser/.ssh/.</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig7-ssh-banner.png" alt="Acceso SSH sin contraseña">
+            <img src="fig7-ssh-banner.png" alt="Acceso SSH sin contraseña">
             <div class="evid-cap"><b>Figura 20.</b> Conexión SSH exitosa como smbuser — banner del servidor My File Server 1.</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig8-uname.png" alt="Kernel vulnerable">
+            <img src="fig8-uname.png" alt="Kernel vulnerable">
             <div class="evid-cap"><b>Figura 21.</b> Resultado de uname -a — kernel 3.10.0-229.el7.x86_64 (vulnerable a CVE-2016-5195).</div>
         </div>
         <div class="evid-card">
-            <img src="img/act13/fig9-dirtycow-root.png" alt="Dirty COW root obtenido">
+            <img src="fig9-dirtycow-root.png" alt="Dirty COW root obtenido">
             <div class="evid-cap"><b>Figura 28.</b> Ejecución de Dirty COW (CVE-2016-5195) — escalada de privilegios a root exitosa.</div>
         </div>
     </div>
@@ -464,8 +464,8 @@
               font-weight: bold; 
               font-size: 1.1em; 
               text-transform: uppercase; 
-              background: rgba(0, 255, 102, 0.1); 
-              box-shadow: 0 0 10px rgba(0, 255, 102, 0.2); 
+              background: rgba(179, 136, 255, 0.1); 
+              box-shadow: 0 0 10px rgba(179, 136, 255, 0.2); 
               transition: 0.3s;
               letter-spacing: 1px;">
         <i class="fas fa-file-pdf" style="margin-right: 10px;"></i> 
