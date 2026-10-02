@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad 13 — Red Team Report: My File Server 1</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed #b388ff; padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .risk-badge { display:inline-block; border:2px solid #ff5f7a; color:#ff5f7a; font-weight:bold; padding:6px 20px; letter-spacing:3px; margin-top:10px; animation:blink-border 1.8s ease-in-out infinite; }
+        @keyframes blink-border { 0%,100%{box-shadow:0 0 6px #ff5f7a;} 50%{box-shadow:0 0 20px #ff5f7a,inset 0 0 10px rgba(255,95,122,.15);} }
+        .stat-row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+        .stat-card { background:rgba(179,136,255,.05); border:1px solid rgba(179,136,255,.3); border-top:2px solid #b388ff; padding:14px 20px; text-align:center; min-width:110px; }
+        .stat-card .sv { font-size:1.8rem; font-weight:900; color:#b388ff; line-height:1; }
+        .stat-card .sv.red { color:#ff5f7a; }
+        .stat-card .sl { font-size:.65rem; color:rgba(179,136,255,.6); letter-spacing:.1em; margin-top:3px; }
+        .team-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:14px; }
+        .team-card { border:1px solid rgba(179,136,255,.25); padding:10px 14px; background:rgba(179,136,255,.03); transition:border-color .2s; }
+        .team-card:hover { border-color:rgba(179,136,255,.6); }
+        .team-card.me { border-color:rgba(179,136,255,.55); background:rgba(179,136,255,.06); }
+        .team-card span.name { color:#b388ff; font-weight:bold; }
+        .scope-table { width:100%; border-collapse:collapse; font-size:.88rem; margin-top:10px; }
+        .scope-table th { color:#b388ff; text-align:left; padding:8px 12px; border-bottom:1px solid rgba(179,136,255,.3); background:rgba(179,136,255,.06); }
+        .scope-table td { padding:8px 12px; border-bottom:1px solid rgba(179,136,255,.08); color:#fff; opacity:.9; }
+        .scope-table tr:hover td { background:rgba(179,136,255,.02); }
+        .scope-table .val { color:#3b9dff; }
+        .scope-table .val-crit { color:#ff5f7a; font-weight:bold; }
+        .phases-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); gap:10px; margin-top:10px; }
+        .phase-card { border:1px solid rgba(179,136,255,.25); border-top:2px solid #b388ff; padding:16px 12px; text-align:center; background:rgba(179,136,255,.02); transition:border-top-color .2s,transform .2s; }
+        .phase-card:hover { border-top-color:#3b9dff; transform:translateY(-2px); }
+        .phase-card .pn { font-size:.6rem; color:rgba(179,136,255,.5); letter-spacing:.2em; margin-bottom:6px; }
+        .phase-card .pi { font-size:1.4rem; margin-bottom:6px; }
+        .phase-card .pname { font-weight:bold; color:#fff; margin-bottom:5px; font-size:.9rem; }
+        .phase-card .ptools { font-size:.7rem; color:#b388ff; line-height:1.6; }
+        .map-container { border:1px solid rgba(179,136,255,.25); padding:16px; overflow-x:auto; text-align:center; background:rgba(0,0,0,.3); margin-top:10px; }
+        .services-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; margin-top:10px; }
+        .svc-card { border:1px solid rgba(179,136,255,.2); padding:13px 15px; display:flex; gap:12px; background:rgba(179,136,255,.02); transition:border-color .2s; }
+        .svc-card:hover { border-color:rgba(179,136,255,.4); }
+        .svc-port { font-weight:900; font-size:1.05rem; min-width:46px; text-align:center; line-height:1.1; }
+        .svc-port small { display:block; font-size:.55rem; letter-spacing:.1em; color:rgba(255,255,255,.4); }
+        .svc-name { font-weight:bold; color:#fff; margin-bottom:2px; font-size:.88rem; }
+        .svc-ver  { font-size:.73rem; color:#3b9dff; margin-bottom:4px; }
+        .svc-desc { font-size:.77rem; color:rgba(255,255,255,.65); margin-top:4px; }
+        .badge { display:inline-block; font-size:.62rem; letter-spacing:.07em; padding:1px 7px; border:1px solid; }
+        .badge-crit { color:#ff5f7a; border-color:#ff5f7a; background:rgba(255,95,122,.08); }
+        .badge-alto { color:#ff6a00; border-color:#ff6a00; background:rgba(255,106,0,.07); }
+        .badge-med  { color:#ffdd00; border-color:#ffdd00; background:rgba(255,221,0,.06); }
+        .terminal { background:rgba(0,0,0,.6); border:1px solid rgba(179,136,255,.2); border-left:3px solid #b388ff; padding:14px 16px; font-size:.78rem; color:#b388ff; overflow-x:auto; line-height:1.75; margin:12px 0; white-space:pre; font-family:'Courier New',monospace; }
+        .kill-chain { display:flex; align-items:stretch; overflow-x:auto; gap:0; margin-top:10px; padding-bottom:6px; }
+        .kc-step { flex:1; min-width:140px; border:1px solid rgba(179,136,255,.2); border-right:none; padding:16px 12px; position:relative; background:rgba(179,136,255,.02); transition:background .2s; }
+        .kc-step:last-child { border-right:1px solid rgba(179,136,255,.2); }
+        .kc-step:hover { background:rgba(179,136,255,.04); }
+        .kc-step::after { content:'▶'; position:absolute; right:-11px; top:50%; transform:translateY(-50%); color:#b388ff; font-size:.7rem; z-index:2; }
+        .kc-step:last-child::after { display:none; }
+        .kc-step .kn { font-size:.58rem; color:rgba(179,136,255,.5); letter-spacing:.15em; margin-bottom:5px; }
+        .kc-step .ki { font-size:1.2rem; margin-bottom:5px; }
+        .kc-step .kt { font-weight:bold; color:#fff; font-size:.85rem; margin-bottom:4px; }
+        .kc-step .kd { font-size:.67rem; color:#b388ff; line-height:1.5; }
+        .kc-root { min-width:140px; border:1px solid #ff5f7a; padding:16px 12px; background:rgba(255,95,122,.06); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        .kc-root .ki { font-size:1.6rem; color:#ff5f7a; }
+        .kc-root .kt { font-weight:900; color:#ff5f7a; font-size:.95rem; margin-top:5px; }
+        .kc-root .kd { font-size:.67rem; color:#ff5f7a; margin-top:6px; line-height:1.5; }
+        .mocks-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:10px 0; }
+        .mock-window { border:1px solid rgba(179,136,255,.25); overflow:hidden; }
+        .mock-bar { background:rgba(0,0,0,.5); padding:5px 10px; font-size:.65rem; color:rgba(179,136,255,.5); border-bottom:1px solid rgba(179,136,255,.15); }
+        .mock-body { padding:16px; background:rgba(0,0,0,.4); }
+        .vuln-dist { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 18px; }
+        .vd { flex:1; min-width:100px; text-align:center; border:1px solid; padding:10px 14px; }
+        .vd.crit { border-color:#ff5f7a; background:rgba(255,95,122,.06); } .vd.crit .vn { color:#ff5f7a; } .vd.crit .vl { color:#ff5f7a; }
+        .vd.alto  { border-color:#ff6a00; background:rgba(255,106,0,.05); } .vd.alto  .vn { color:#ff6a00; } .vd.alto  .vl { color:#ff6a00; }
+        .vd.med   { border-color:#ffdd00; background:rgba(255,221,0,.04); } .vd.med   .vn { color:#ffdd00; } .vd.med   .vl { color:#ffdd00; }
+        .vd.baja  { border-color:rgba(179,136,255,.3); background:rgba(179,136,255,.03); } .vd.baja .vn { color:#b388ff; } .vd.baja .vl { color:#b388ff; }
+        .vd .vn { font-size:1.7rem; font-weight:900; line-height:1; }
+        .vd .vl { font-size:.62rem; letter-spacing:.1em; margin-top:3px; }
+        .vuln-table { width:100%; border-collapse:collapse; font-size:.83rem; margin-top:10px; }
+        .vuln-table th { color:#b388ff; text-align:left; padding:9px 11px; font-size:.7rem; letter-spacing:.1em; border-bottom:1px solid rgba(179,136,255,.3); background:rgba(179,136,255,.06); }
+        .vuln-table td { padding:9px 11px; border-bottom:1px solid rgba(179,136,255,.07); color:#fff; opacity:.9; vertical-align:top; }
+        .vuln-table tr:hover td { background:rgba(179,136,255,.02); }
+        .vid { font-size:.72rem; color:rgba(255,255,255,.4); }
+        .cia-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:10px; }
+        .cia-card { border:1px solid rgba(179,136,255,.2); padding:18px; background:rgba(179,136,255,.02); }
+        .cia-letter { font-size:2.4rem; font-weight:900; line-height:1; margin-bottom:2px; opacity:.18; }
+        .cia-card.conf .cia-letter { color:#ff5f7a; } .cia-card.intg .cia-letter { color:#ff6a00; } .cia-card.avail .cia-letter { color:#ffdd00; }
+        .cia-title { font-weight:bold; color:#fff; margin-bottom:3px; }
+        .cia-badge { display:inline-block; font-size:.6rem; padding:1px 7px; margin-bottom:8px; border:1px solid; }
+        .cia-card.conf .cia-badge { color:#ff5f7a; border-color:#ff5f7a; background:rgba(255,95,122,.08); }
+        .cia-card.intg .cia-badge { color:#ff6a00; border-color:#ff6a00; background:rgba(255,106,0,.07); }
+        .cia-card.avail .cia-badge { color:#ffdd00; border-color:#ffdd00; background:rgba(255,221,0,.06); }
+        .cia-text { font-size:.82rem; color:rgba(255,255,255,.75); }
+        .rec-list { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+        .rec-item { border:1px solid rgba(179,136,255,.18); padding:12px 14px; display:flex; gap:12px; background:rgba(179,136,255,.02); transition:border-color .2s; }
+        .rec-item:hover { border-color:rgba(179,136,255,.4); }
+        .rec-id { min-width:62px; }
+        .rec-badge { display:block; font-size:.58rem; padding:2px 5px; text-align:center; margin-bottom:3px; border:1px solid; }
+        .rec-badge.crit { color:#ff5f7a; border-color:#ff5f7a; background:rgba(255,95,122,.08); }
+        .rec-badge.alto { color:#ff6a00; border-color:#ff6a00; background:rgba(255,106,0,.07); }
+        .rec-badge.med  { color:#ffdd00; border-color:#ffdd00; background:rgba(255,221,0,.06); }
+        .rec-num { font-size:.7rem; color:rgba(255,255,255,.4); }
+        .rec-title { font-weight:bold; color:#fff; font-size:.88rem; margin-bottom:2px; }
+        .rec-desc  { font-size:.8rem; color:rgba(255,255,255,.7); }
+        .rec-desc code { color:#b388ff; }
+        .roadmap-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin-top:10px; }
+        .rm-col { border:1px solid rgba(179,136,255,.18); padding:14px; background:rgba(179,136,255,.02); }
+        .rm-phase { font-size:.6rem; letter-spacing:.14em; margin-bottom:8px; display:block; font-weight:bold; }
+        .rm-phase.imm { color:#ff5f7a; } .rm-phase.short { color:#ff6a00; } .rm-phase.med { color:#ffdd00; } .rm-phase.cont { color:#b388ff; }
+        .rm-item { font-size:.77rem; color:rgba(255,255,255,.75); padding:5px 0; border-bottom:1px solid rgba(179,136,255,.05); }
+        .rm-item:last-child { border-bottom:none; }
+        .rm-item i { color:#b388ff; margin-right:4px; font-size:.68rem; }
+        .cve-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:14px; }
+        .cve-card { border:1px solid rgba(179,136,255,.2); padding:16px; background:rgba(179,136,255,.02); }
+        .cve-card.red { border-color:rgba(255,95,122,.4); background:rgba(255,95,122,.04); }
+        .refs-list { list-style:none; display:flex; flex-direction:column; gap:7px; margin-top:10px; }
+        .refs-list li { border-left:3px solid rgba(179,136,255,.3); padding:7px 12px; font-size:.8rem; color:rgba(255,255,255,.75); transition:border-color .2s; }
+        .refs-list li:hover { border-left-color:#b388ff; }
+        .refs-list li a { color:#3b9dff; text-decoration:none; }
+        .refs-list li a:hover { text-decoration:underline; }
+        .refs-list li i { color:#b388ff; margin-right:6px; }
+        .concl-box { border:1px solid rgba(179,136,255,.2); padding:20px; margin-bottom:12px; background:rgba(179,136,255,.02); }
+        .concl-box.orange { border-color:rgba(255,106,0,.3); border-top:2px solid #ff6a00; background:rgba(255,106,0,.03); }
+        .concl-box.green  { border-top:2px solid #b388ff; }
+        .concl-box h3 { font-size:.82rem; letter-spacing:.12em; margin-bottom:12px; }
+        .concl-box.green h3 { color:#b388ff; } .concl-box.orange h3 { color:#ff6a00; }
+        .concl-box p { font-size:.85rem; color:rgba(255,255,255,.8); margin-bottom:8px; line-height:1.8; }
+        .concl-box p:last-child { margin-bottom:0; }
+        .concl-box strong { color:#b388ff; }
+        .pdf-btn-wrap { text-align:center; padding:16px 0 4px; }
+        .pdf-btn-wrap a { display:inline-flex; align-items:center; gap:8px; background:#b388ff; color:#0a0714; border:none; padding:11px 28px; font-weight:bold; font-size:.9rem; letter-spacing:.1em; text-decoration:none; transition:background .2s,box-shadow .2s; font-family:'Courier New',monospace; }
+        .pdf-btn-wrap a:hover { background:#8b5cf6; box-shadow:0 0 18px rgba(179,136,255,.4); }
+        .evid-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-top:12px; }
+        .evid-card { border:1px solid rgba(179,136,255,.25); overflow:hidden; background:rgba(0,0,0,.25); }
+        .evid-card img { width:100%; display:block; }
+        .evid-cap { padding:9px 12px; font-size:.72rem; color:rgba(179,136,255,.75); border-top:1px solid rgba(179,136,255,.15); background:rgba(0,0,0,.3); }
+        .evid-cap b { color:#b388ff; }
+        @media(max-width:600px){
+            .kill-chain{flex-direction:column;}
+            .kc-step::after{content:'▼';right:50%;bottom:-11px;top:auto;transform:translateX(50%);}
+            .kc-step{border-right:1px solid rgba(179,136,255,.2);border-bottom:none;}
+            .kc-step:last-child{border-bottom:1px solid rgba(179,136,255,.2);}
+        }
+    </style>
+</head>
+<body>
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
+
+<main>
+    <a href="../actividades.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Actividades</a>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-user-secret"></i> Actividad 13 — Red Team Report: Pentesting de My File Server 1</h2>
+        <div class="info-box">
+            <p><strong>CNO IV — Programación WAP</strong></p>
+            <p><strong>Alumna:</strong> Tristán Rivera Magdalena Yesenia — 174702 &nbsp;|&nbsp; <strong>Grupo:</strong> T37A</p>
+            <p><strong>Docente:</strong> Mtro. Servando López Contreras &nbsp;|&nbsp; <strong>Parcial:</strong> 1</p>
+            <p><strong>Fecha:</strong> 08–09 de marzo de 2026</p>
+            <div class="risk-badge">⚠ RIESGO GLOBAL: CRÍTICO</div>
+        </div>
+        <div class="stat-row">
+            <div class="stat-card"><div class="sv">7</div><div class="sl">VULNERABILIDADES</div></div>
+            <div class="stat-card"><div class="sv red">2</div><div class="sl">CRÍTICAS</div></div>
+            <div class="stat-card"><div class="sv">9.8</div><div class="sl">CVSS SCORE</div></div>
+            <div class="stat-card"><div class="sv red">ROOT</div><div class="sl">NIVEL ACCESO</div></div>
+        </div>
+    </section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-file-alt"></i> 01 — Resumen Ejecutivo</h2>
+    <p style="color:rgba(255,255,255,.85);line-height:1.85;font-size:.92rem;">
+        Se realizó una evaluación de seguridad ofensiva (<strong style="color:#b388ff">Penetration Test</strong>) sobre la máquina vulnerable <strong style="color:#b388ff">My File Server: 1</strong> disponible en la plataforma Armour Infosec, con dirección IP <strong style="color:#b388ff">192.168.0.8</strong>. La evaluación se llevó a cabo bajo el estándar <strong style="color:#b388ff">PTES</strong> en modalidad <strong style="color:#b388ff">Black Box</strong> — sin credenciales previas.
+    </p>
+    <br>
+    <p style="color:rgba(255,255,255,.85);line-height:1.85;font-size:.92rem;">
+        El hallazgo más crítico fue la exposición de credenciales en texto plano en el archivo <strong style="color:#ff5f7a">readme.txt</strong> accesible públicamente vía HTTP, lo que permitió acceso FTP autenticado e inyección de llave pública SSH en el directorio del usuario <strong style="color:#b388ff">smbuser</strong>. Una vez dentro, el kernel <strong style="color:#ff5f7a">3.10.0-229.el7.x86_64</strong> fue explotado mediante <strong style="color:#ff5f7a">Dirty COW (CVE-2016-5195)</strong>, logrando escalada completa a <strong style="color:#ff5f7a">root</strong>. Compromiso total en 4 pasos con herramientas públicas básicas.
+    </p>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-crosshairs"></i> 02 — Alcance (Scope)</h2>
+    <table class="scope-table">
+        <tr><th>CAMPO</th><th>VALOR</th></tr>
+        <tr><td>Objetivo</td><td class="val">My File Server: 1 — Armour Infosec</td></tr>
+        <tr><td>Dirección IP</td><td class="val">192.168.0.8</td></tr>
+        <tr><td>Hostname</td><td class="val">fileserver</td></tr>
+        <tr><td>Sistema Operativo</td><td class="val">CentOS Linux · Kernel 3.10.0-229.el7.x86_64</td></tr>
+        <tr><td>MAC Vendor</td><td class="val">PCS Systemtechnik GmbH (VirtualBox)</td></tr>
+        <tr><td>Segmento de Red</td><td class="val">192.168.0.0/24 — laboratorio interno</td></tr>
+        <tr><td>Tipo de Evaluación</td><td class="val">Caja Negra (Black Box) — sin credenciales previas</td></tr>
+        <tr><td>Metodología</td><td class="val">PTES — Penetration Testing Execution Standard</td></tr>
+        <tr><td>Herramientas</td><td class="val">netdiscover · nmap · smbmap · nikto · ftp · ssh-keygen · wget · gcc · 40616.c</td></tr>
+        <tr><td>Período</td><td class="val">08–09 de marzo de 2026</td></tr>
+        <tr><td>Resultado</td><td class="val-crit">COMPROMISO TOTAL — ROOT OBTENIDO ✓</td></tr>
+    </table>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-project-diagram"></i> 03 — Metodología PTES</h2>
+    <div class="phases-grid">
+        <div class="phase-card"><div class="pn">FASE 01</div><div class="pi">🔍</div><div class="pname">Reconocimiento</div><div class="ptools">netdiscover -r 192.168.0.0/16<br>nmap -sV 192.168.0.8<br>8 hosts activos<br>Objetivo: .0.8 (VirtualBox)</div></div>
+        <div class="phase-card"><div class="pn">FASE 02</div><div class="pi">🔎</div><div class="pname">Enumeración</div><div class="ptools">nmap -A 192.168.0.8<br>smbmap -H 192.168.0.8<br>nikto -h 192.168.0.8<br>FTP client (21 / 2121)</div></div>
+        <div class="phase-card"><div class="pn">FASE 03</div><div class="pi">💥</div><div class="pname">Explotación</div><div class="ptools">FTP login: smbuser/rootroot1<br>ssh-keygen (ED25519)<br>ftp PUT → authorized_keys<br>ssh -i key smbuser@.0.8</div></div>
+        <div class="phase-card"><div class="pn">FASE 04</div><div class="pi">🔥</div><div class="pname">Post-Explotación</div><div class="ptools">uname -a → kernel 3.10.0-229<br>wget 40616.c (Dirty COW)<br>gcc -pthread -o pa 40616.c<br>./pa → whoami = root ✓</div></div>
+        <div class="phase-card"><div class="pn">FASE 05</div><div class="pi">📄</div><div class="pname">Informe</div><div class="ptools">Red Team Report PDF<br>7 hallazgos documentados<br>CVSS 9.8 — CRÍTICO<br>7 recomendaciones técnicas</div></div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-network-wired"></i> 04 — Topología de Red</h2>
+    <div class="map-container">
+        <svg viewBox="0 0 820 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'Courier New',monospace;width:100%;max-width:820px;">
+            <rect width="820" height="360" fill="#0a0714"/>
+            <defs>
+                <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#b388ff06" stroke-width="1"/></pattern>
+                <filter id="gl"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <filter id="gr"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <rect width="820" height="360" fill="url(#g)"/>
+            <line x1="178" y1="180" x2="390" y2="180" stroke="#b388ff" stroke-width="2" stroke-dasharray="8,4" opacity=".8"/>
+            <polygon points="388,175 403,180 388,185" fill="#b388ff" opacity=".9"/>
+            <line x1="513" y1="180" x2="616" y2="82" stroke="#ff5f7a40" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <line x1="513" y1="180" x2="673" y2="128" stroke="#ff6a0040" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <line x1="513" y1="180" x2="690" y2="180" stroke="#ff5f7a50" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <line x1="513" y1="180" x2="673" y2="232" stroke="#ff6a0040" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <line x1="513" y1="180" x2="616" y2="278" stroke="#b388ff40" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <text x="283" y="167" text-anchor="middle" fill="#b388ff" font-size="8" letter-spacing="2">ATTACK TRAFFIC</text>
+            <circle cx="128" cy="180" r="50" fill="#0d1a10" stroke="#b388ff" stroke-width="2" filter="url(#gl)"/>
+            <text x="128" y="172" text-anchor="middle" fill="#b388ff" font-size="10" font-weight="bold">KALI LINUX</text>
+            <text x="128" y="186" text-anchor="middle" fill="#9a8cc2" font-size="9">192.168.0.10</text>
+            <text x="128" y="198" text-anchor="middle" fill="#9a8cc2" font-size="8">eth0</text>
+            <circle cx="128" cy="45" r="25" fill="#1a0408" stroke="#ff5f7a" stroke-width="2" filter="url(#gr)"/>
+            <text x="128" y="40" text-anchor="middle" fill="#ff5f7a" font-size="9" font-weight="bold">#ROOT</text>
+            <text x="128" y="52" text-anchor="middle" fill="#ff5566" font-size="8">whoami</text>
+            <line x1="128" y1="70" x2="128" y2="130" stroke="#ff5f7a" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <polygon points="128,130 123,119 133,119" fill="#ff5f7a"/>
+            <circle cx="458" cy="180" r="55" fill="#0d1208" stroke="#b388ff" stroke-width="2.5" filter="url(#gl)"/>
+            <text x="458" y="169" text-anchor="middle" fill="#b388ff" font-size="10" font-weight="bold">FILE SERVER</text>
+            <text x="458" y="183" text-anchor="middle" fill="#9a8cc2" font-size="9">192.168.0.8</text>
+            <text x="458" y="196" text-anchor="middle" fill="#ff5f7a" font-size="8">COMPROMISED</text>
+            <circle cx="616" cy="80" r="30" fill="#1a0408" stroke="#ff5f7a" stroke-width="1.5" filter="url(#gr)"/>
+            <text x="616" y="75" text-anchor="middle" fill="#ff5f7a" font-size="13" font-weight="bold">21</text>
+            <text x="616" y="88" text-anchor="middle" fill="#ff4466" font-size="8">vsftpd 3.0.2</text>
+            <text x="616" y="99" text-anchor="middle" fill="#ff5f7a" font-size="7">CRITICO</text>
+            <circle cx="674" cy="126" r="26" fill="#0d1a10" stroke="#ff6a00" stroke-width="1.5"/>
+            <text x="674" y="121" text-anchor="middle" fill="#ff6a00" font-size="12" font-weight="bold">22</text>
+            <text x="674" y="134" text-anchor="middle" fill="#ff6a00" font-size="7">OpenSSH 7.4</text>
+            <circle cx="692" cy="180" r="26" fill="#1a0804" stroke="#ff5f7a" stroke-width="1.5" filter="url(#gr)"/>
+            <text x="692" y="175" text-anchor="middle" fill="#ff5f7a" font-size="12" font-weight="bold">80</text>
+            <text x="692" y="188" text-anchor="middle" fill="#ff4466" font-size="7">Apache 2.4.6</text>
+            <circle cx="674" cy="234" r="26" fill="#1a0d04" stroke="#ff6a00" stroke-width="1.5"/>
+            <text x="674" y="229" text-anchor="middle" fill="#ff6a00" font-size="10" font-weight="bold">445</text>
+            <text x="674" y="242" text-anchor="middle" fill="#ff6a00" font-size="7">Samba 4.9.1</text>
+            <circle cx="616" cy="278" r="26" fill="#0d1a10" stroke="#9a8cc2" stroke-width="1.5"/>
+            <text x="616" y="272" text-anchor="middle" fill="#9a8cc2" font-size="8" font-weight="bold">2049</text>
+            <text x="616" y="283" text-anchor="middle" fill="#9a8cc2" font-size="7">NFS / 2121</text>
+            <text x="616" y="294" text-anchor="middle" fill="#9a8cc2" font-size="7">ProFTPD</text>
+            <rect x="10" y="322" width="480" height="32" fill="rgba(0,0,0,.4)" rx="2"/>
+            <circle cx="26" cy="338" r="6" fill="#1a0408" stroke="#ff5f7a" stroke-width="1.5"/>
+            <text x="37" y="342" fill="#ff5f7a" font-size="8">CRITICO</text>
+            <circle cx="92" cy="338" r="6" fill="#1a0d04" stroke="#ff6a00" stroke-width="1.5"/>
+            <text x="103" y="342" fill="#ff6a00" font-size="8">ALTO</text>
+            <circle cx="148" cy="338" r="6" fill="#0d1a10" stroke="#9a8cc2" stroke-width="1.5"/>
+            <text x="159" y="342" fill="#9a8cc2" font-size="8">MEDIO</text>
+            <line x1="210" y1="338" x2="234" y2="338" stroke="#b388ff" stroke-width="2" stroke-dasharray="5,3"/>
+            <text x="239" y="342" fill="#b388ff" font-size="8">TRAFICO ATAQUE</text>
+            <line x1="335" y1="338" x2="359" y2="338" stroke="#9a8cc250" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="364" y="342" fill="#9a8cc2" font-size="8">SERVICIO</text>
+        </svg>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-server"></i> 05 — Servicios Identificados (Nmap)</h2>
+    <div class="evid-grid" style="grid-template-columns:1fr;max-width:620px;">
+        <div class="evid-card">
+            <img src="img/act13/fig2-nmap.png" alt="Escaneo Nmap -sV">
+            <div class="evid-cap"><b>Figura 2.</b> Escaneo Nmap -sV — servicios identificados en 192.168.0.8 (captura real).</div>
+        </div>
+    </div>
+    <div class="services-grid">
+        <div class="svc-card"><div class="svc-port" style="color:#ff5f7a">21<small>TCP</small></div><div><div class="svc-name">FTP — vsftpd</div><div class="svc-ver">v3.0.2 · Acceso anónimo HABILITADO</div><span class="badge badge-crit">CRÍTICO</span><div class="svc-desc">Directorio raíz escribible. Permitió inyectar authorized_keys sin autenticación.</div></div></div>
+        <div class="svc-card"><div class="svc-port" style="color:#ff6a00">22<small>TCP</small></div><div><div class="svc-name">SSH — OpenSSH</div><div class="svc-ver">v7.4 (protocol 2.0)</div><span class="badge badge-alto">ALTO</span><div class="svc-desc">Vector de acceso remoto tras inyección de llave ED25519. Shell sin contraseña obtenida.</div></div></div>
+        <div class="svc-card"><div class="svc-port" style="color:#ff5f7a">80<small>TCP</small></div><div><div class="svc-name">HTTP — Apache</div><div class="svc-ver">httpd 2.4.6 (CentOS)</div><span class="badge badge-crit">CRÍTICO</span><div class="svc-desc">HTTP TRACE habilitado, indexing activo. <strong style="color:#ff5f7a">readme.txt</strong> con credenciales en texto plano.</div></div></div>
+        <div class="svc-card"><div class="svc-port" style="color:#ff6a00">445<small>TCP</small></div><div><div class="svc-name">SMB — Samba</div><div class="svc-ver">smbd 4.9.1 (workgroup: SAMBA)</div><span class="badge badge-alto">ALTO</span><div class="svc-desc">NULL session activa. Recurso smbdata: READ/WRITE sin autenticación.</div></div></div>
+        <div class="svc-card"><div class="svc-port" style="color:#ffdd00">2049<small>TCP</small></div><div><div class="svc-name">NFS — nfs_acl</div><div class="svc-ver">v3 (RPC #100227)</div><span class="badge badge-med">MEDIO</span><div class="svc-desc">Posibles exportaciones NFS accesibles sin restricción de IP desde la red local.</div></div></div>
+        <div class="svc-card"><div class="svc-port" style="color:#ffdd00">2121<small>TCP</small></div><div><div class="svc-name">FTP — ProFTPD</div><div class="svc-ver">v1.3.5 (puerto no estándar)</div><span class="badge badge-med">MEDIO</span><div class="svc-desc">Versión con vulnerabilidades históricas documentadas. Amplía superficie de ataque.</div></div></div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-exclamation-triangle" style="color:#ff5f7a"></i> 06 — Hallazgo Crítico: readme.txt + SMB NULL Session</h2>
+    <p style="color:rgba(255,255,255,.8);font-size:.88rem;line-height:1.8;">El escaneo con Nikto detectó un archivo <code>/readme.txt</code> accesible públicamente. Al consultarlo desde el navegador, reveló la contraseña del sistema en texto plano. En paralelo, <code>smbmap</code> confirmó una sesión SMB nula (sin autenticación) con el recurso <code>smbdata</code> en lectura/escritura.</p>
+    <div class="evid-grid">
+        <div class="evid-card">
+            <img src="img/act13/fig4-readme.png" alt="Contenido de readme.txt">
+            <div class="evid-cap"><b>Figura 13.</b> Contenido de readme.txt — credenciales expuestas en texto plano: "rootroot1".</div>
+        </div>
+        <div class="evid-card">
+            <img src="img/act13/fig3-smbmap.png" alt="smbmap enumeración SMB">
+            <div class="evid-cap"><b>Figura 10.</b> smbmap — enumeración de recursos compartidos SMB con sesión nula.</div>
+        </div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-skull-crossbones"></i> 07 — Cadena de Explotación (Kill Chain)</h2>
+    <div class="kill-chain">
+        <div class="kc-step"><div class="kn">01 — RECON</div><div class="ki">🔍</div><div class="kt">readme.txt</div><div class="kd">Nikto detecta<br>/readme.txt<br>accesible HTTP<br>puerto 80</div></div>
+        <div class="kc-step"><div class="kn">02 — CRED</div><div class="ki">🔑</div><div class="kt">rootroot1</div><div class="kd">smbuser:rootroot1<br>texto plano<br>sin cifrado</div></div>
+        <div class="kc-step"><div class="kn">03 — FTP</div><div class="ki">📤</div><div class="kt">SSH Key Inject</div><div class="kd">ftp login OK<br>cd .ssh/smbuser<br>PUT authorized_keys<br>91 bytes OK</div></div>
+        <div class="kc-step"><div class="kn">04 — ACCESS</div><div class="ki">💻</div><div class="kt">Shell smbuser</div><div class="kd">ssh -i id_ed25519<br>smbuser@.0.8<br>Sin contrasena<br>My File Server</div></div>
+        <div class="kc-step"><div class="kn">05 — PRIVESC</div><div class="ki">🔥</div><div class="kt">Dirty COW</div><div class="kd">wget 40616.c<br>gcc -pthread -o pa<br>./pa race cond.<br>passwd overwritten</div></div>
+        <div class="kc-root"><div class="ki">💀</div><div class="kt">#ROOT</div><div class="kd">whoami = root<br>CVE-2016-5195<br>TOTAL PWNED</div></div>
+    </div>
+
+    <h3 style="color:#b388ff;font-size:.85rem;letter-spacing:.08em;margin-top:22px;margin-bottom:6px;">EVIDENCIA FOTOGRÁFICA DE LA CADENA COMPLETA</h3>
+    <div class="evid-grid">
+        <div class="evid-card">
+            <img src="img/act13/fig1-netdiscover.png" alt="netdiscover">
+            <div class="evid-cap"><b>Figura 1.</b> Escaneo ARP con netdiscover — host objetivo identificado en 192.168.0.8.</div>
+        </div>
+        <div class="evid-card">
+            <img src="img/act13/fig5-ftp-login.png" alt="FTP login exitoso">
+            <div class="evid-cap"><b>Figura 16.</b> Acceso FTP exitoso con usuario smbuser y contraseña rootroot1.</div>
+        </div>
+        <div class="evid-card">
+            <img src="img/act13/fig6-authorized-keys.png" alt="Inyección de llave SSH vía FTP">
+            <div class="evid-cap"><b>Figura 19.</b> Transferencia completada — authorized_keys inyectado en /home/smbuser/.ssh/.</div>
+        </div>
+        <div class="evid-card">
+            <img src="img/act13/fig7-ssh-banner.png" alt="Acceso SSH sin contraseña">
+            <div class="evid-cap"><b>Figura 20.</b> Conexión SSH exitosa como smbuser — banner del servidor My File Server 1.</div>
+        </div>
+        <div class="evid-card">
+            <img src="img/act13/fig8-uname.png" alt="Kernel vulnerable">
+            <div class="evid-cap"><b>Figura 21.</b> Resultado de uname -a — kernel 3.10.0-229.el7.x86_64 (vulnerable a CVE-2016-5195).</div>
+        </div>
+        <div class="evid-card">
+            <img src="img/act13/fig9-dirtycow-root.png" alt="Dirty COW root obtenido">
+            <div class="evid-cap"><b>Figura 28.</b> Ejecución de Dirty COW (CVE-2016-5195) — escalada de privilegios a root exitosa.</div>
+        </div>
+    </div>
+
+    <div class="cve-grid">
+        <div class="cve-card red">
+            <div style="font-size:.65rem;color:#ff5f7a;letter-spacing:.15em;margin-bottom:4px;">CVE-2016-5195</div>
+            <div style="font-size:1.2rem;font-weight:900;color:#ff5f7a;margin-bottom:8px;">DIRTY COW</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.75);line-height:1.65;">Race condition en el mecanismo <strong style="color:#b388ff">copy-on-write</strong> del kernel Linux. Permite escritura en archivos de solo lectura mapeados en memoria.</div>
+        </div>
+        <div class="cve-card">
+            <div style="font-size:.65rem;color:#b388ff;letter-spacing:.12em;margin-bottom:8px;">// CONDICIONES</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.75);line-height:1.8;">OK Kernel Linux menor a 4.8.2 (sin parchear)<br>OK Acceso local al sistema<br>OK gcc y pthread disponibles<br>OK Kernel: <span style="color:#ff5f7a">3.10.0-229.el7</span><br>OK Exploit: <span style="color:#3b9dff">40616.c (Exploit-DB)</span></div>
+        </div>
+        <div class="cve-card">
+            <div style="font-size:.65rem;color:#b388ff;letter-spacing:.12em;margin-bottom:8px;">// MECANISMO</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.75);line-height:1.8;">1. Mapear <span style="color:#b388ff">/usr/bin/passwd</span><br>2. Thread 1: escribir payload ELF<br>3. Thread 2: madvise(MADV_DONTNEED)<br>4. Race write en archivo real<br>5. <span style="color:#ff5f7a">Shell UID=0 obtenida</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-bug"></i> 08 — Tabla de Hallazgos (7 Vulnerabilidades)</h2>
+    <div class="vuln-dist">
+        <div class="vd crit"><div class="vn">2</div><div class="vl">CRÍTICAS</div></div>
+        <div class="vd alto"><div class="vn">3</div><div class="vl">ALTAS</div></div>
+        <div class="vd med"><div class="vn">2</div><div class="vl">MEDIAS</div></div>
+        <div class="vd baja"><div class="vn">0</div><div class="vl">BAJAS</div></div>
+    </div>
+    <table class="vuln-table">
+        <tr><th>ID</th><th>VULNERABILIDAD</th><th>PUERTO</th><th>SEVERIDAD</th><th>RECOMENDACIÓN</th></tr>
+        <tr><td class="vid">V-01</td><td>Acceso FTP Anónimo — vsftpd 3.0.2 con directorio raíz escribible</td><td style="color:#3b9dff;font-size:.75rem;">21/tcp</td><td><span class="badge badge-alto">ALTA</span></td><td style="font-size:.78rem;">anonymous_enable=NO · SFTP/FTPS</td></tr>
+        <tr><td class="vid">V-02</td><td>Credenciales en texto plano en readme.txt vía HTTP público</td><td style="color:#3b9dff;font-size:.75rem;">HTTP/80</td><td><span class="badge badge-crit">CRÍTICA</span></td><td style="font-size:.78rem;">Eliminar · bcrypt/argon2 · Auditoría</td></tr>
+        <tr><td class="vid">V-03</td><td>SMB smbdata con READ/WRITE sin autenticación (NULL session)</td><td style="color:#3b9dff;font-size:.75rem;">445/tcp</td><td><span class="badge badge-alto">ALTA</span></td><td style="font-size:.78rem;">guest ok=no · valid users=@smbusers</td></tr>
+        <tr><td class="vid">V-04</td><td>HTTP TRACE habilitado — susceptible a Cross-Site Tracing (XST)</td><td style="color:#3b9dff;font-size:.75rem;">80/tcp</td><td><span class="badge badge-med">MEDIA</span></td><td style="font-size:.78rem;">TraceEnable Off en httpd.conf</td></tr>
+        <tr><td class="vid">V-05</td><td>Directory Indexing activo — listado de directorios expuesto</td><td style="color:#3b9dff;font-size:.75rem;">80/tcp</td><td><span class="badge badge-med">MEDIA</span></td><td style="font-size:.78rem;">Options -Indexes · ServerTokens Prod</td></tr>
+        <tr><td class="vid">V-06</td><td>SSH inyectable vía FTP — authorized_keys sin restricción de escritura</td><td style="color:#3b9dff;font-size:.75rem;">21/tcp</td><td><span class="badge badge-alto">ALTA</span></td><td style="font-size:.78rem;">chroot_local_user=YES · Revocar llaves</td></tr>
+        <tr><td class="vid">V-07</td><td>Kernel vulnerable a Dirty COW — CVE-2016-5195 (race condition)</td><td style="color:#3b9dff;font-size:.75rem;">LOCAL</td><td><span class="badge badge-crit">CRÍTICA</span></td><td style="font-size:.78rem;">yum update kernel &gt;= 3.10.0-514.6.2.el7</td></tr>
+    </table>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-shield-alt"></i> 09 — Análisis de Impacto (Modelo CIA)</h2>
+    <div class="cia-grid">
+        <div class="cia-card conf"><div class="cia-letter">C</div><div class="cia-title">Confidencialidad</div><span class="cia-badge">IMPACTO: CRÍTICO</span><div class="cia-text">Credenciales expuestas en HTTP público. Con acceso root se puede leer <strong>/etc/shadow</strong>, datos de usuarios, archivos SMB y toda información almacenada. Exposición total.</div></div>
+        <div class="cia-card intg"><div class="cia-letter">I</div><div class="cia-title">Integridad</div><span class="cia-badge">IMPACTO: CRÍTICO</span><div class="cia-text">Root permite modificar cualquier binario, log o configuración. Dirty COW sobreescribió <strong>/usr/bin/passwd</strong>. SMB smbdata con R/W sin auth disponible para cualquier actor de red.</div></div>
+        <div class="cia-card avail"><div class="cia-letter">A</div><div class="cia-title">Disponibilidad</div><span class="cia-badge">IMPACTO: ALTO</span><div class="cia-text">Con acceso root es posible detener servicios, eliminar archivos críticos, instalar rootkits/backdoors o apagar el servidor. No se realizaron acciones destructivas durante la evaluación.</div></div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-tools"></i> 10 — Recomendaciones Técnicas</h2>
+    <div class="rec-list">
+        <div class="rec-item"><div class="rec-id"><span class="rec-badge crit">CRÍTICO</span><span class="rec-num">REC-01</span></div><div><div class="rec-title">Eliminar credenciales expuestas en recursos web</div><div class="rec-desc">Eliminar <em>readme.txt</em> inmediatamente. Política de contraseñas con hashing seguro (<code>bcrypt</code>/<code>argon2</code>). Auditar servidor web en busca de otros archivos sensibles.</div></div></div>
+        <div class="rec-item"><div class="rec-id"><span class="rec-badge crit">CRÍTICO</span><span class="rec-num">REC-02</span></div><div><div class="rec-title">Actualizar el kernel del sistema operativo</div><div class="rec-desc">Actualizar a mínimo <code>3.10.0-514.6.2.el7</code> (parche CVE-2016-5195). Ejecutar <code>yum update kernel</code>. Proceso de parches periódico documentado.</div></div></div>
+        <div class="rec-item"><div class="rec-id"><span class="rec-badge alto">ALTO</span><span class="rec-num">REC-03</span></div><div><div class="rec-title">Deshabilitar acceso FTP anónimo</div><div class="rec-desc">Establecer <code>anonymous_enable=NO</code> en <em>/etc/vsftpd/vsftpd.conf</em>. Si no es necesario, deshabilitar. Migrar a <code>SFTP</code> o <code>FTPS</code> con certificados.</div></div></div>
+        <div class="rec-item"><div class="rec-id"><span class="rec-badge alto">ALTO</span><span class="rec-num">REC-04</span></div><div><div class="rec-title">Restringir permisos del recurso SMB 'smbdata'</div><div class="rec-desc">Agregar <code>guest ok = no</code> y <code>valid users = @smbusers</code> en <em>/etc/samba/smb.conf</em>. Habilitar registro de accesos.</div></div></div>
+        <div class="rec-item"><div class="rec-id"><span class="rec-badge alto">ALTO</span><span class="rec-num">REC-05</span></div><div><div class="rec-title">Restringir escritura en directorios home vía FTP</div><div class="rec-desc">Implementar <code>chroot_local_user=YES</code> en vsftpd. Revocar inmediatamente las llaves SSH inyectadas del archivo <em>authorized_keys</em> de smbuser.</div></div></div>
+        <div class="rec-item"><div class="rec-id"><span class="rec-badge med">MEDIO</span><span class="rec-num">REC-06</span></div><div><div class="rec-title">Hardening Apache</div><div class="rec-desc">Agregar <code>TraceEnable Off</code>, <code>Options -Indexes</code>, <code>ServerTokens Prod</code> y cabecera <code>X-Frame-Options</code> en la configuración de Apache.</div></div></div>
+        <div class="rec-item"><div class="rec-id"><span class="rec-badge med">MEDIO</span><span class="rec-num">REC-07</span></div><div><div class="rec-title">Monitoreo y detección de intrusos</div><div class="rec-desc">IDS/IPS (Snort/Suricata), SIEM centralizado y <code>fail2ban</code> en FTP/SSH/HTTP. Pentesting trimestral documentado.</div></div></div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-road"></i> 11 — Roadmap de Remediación</h2>
+    <div class="roadmap-grid">
+        <div class="rm-col" style="border-top:2px solid #ff5f7a"><span class="rm-phase imm">INMEDIATO — 72 HRS</span><div class="rm-item"><i class="fas fa-times-circle"></i>Eliminar readme.txt</div><div class="rm-item"><i class="fas fa-times-circle"></i>Actualizar Kernel CVE-2016-5195</div><div class="rm-item"><i class="fas fa-times-circle"></i>Revocar authorized_keys inyectado</div></div>
+        <div class="rm-col" style="border-top:2px solid #ff6a00"><span class="rm-phase short">CORTO PLAZO — MES 1</span><div class="rm-item"><i class="fas fa-lock"></i>FTP anónimo deshabilitado</div><div class="rm-item"><i class="fas fa-lock"></i>Migrar a SFTP/FTPS</div><div class="rm-item"><i class="fas fa-lock"></i>SMB: autenticación obligatoria</div></div>
+        <div class="rm-col" style="border-top:2px solid #ffdd00"><span class="rm-phase med">MEDIO PLAZO — MES 2-3</span><div class="rm-item"><i class="fas fa-shield-alt"></i>TraceEnable Off + -Indexes</div><div class="rm-item"><i class="fas fa-shield-alt"></i>X-Frame-Options + Headers</div><div class="rm-item"><i class="fas fa-shield-alt"></i>Segmentación DMZ + Firewall</div></div>
+        <div class="rm-col" style="border-top:2px solid #b388ff"><span class="rm-phase cont">CONTINUO</span><div class="rm-item"><i class="fas fa-eye"></i>IDS/IPS Snort/Suricata</div><div class="rm-item"><i class="fas fa-eye"></i>SIEM + fail2ban</div><div class="rm-item"><i class="fas fa-eye"></i>Pentest trimestral</div></div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-flag-checkered"></i> 12 — Conclusión y Reflexión Técnica</h2>
+    <div class="concl-box green">
+        <h3>// CONCLUSIÓN EJECUTIVA</h3>
+        <p>La evaluación sobre <strong>My File Server: 1</strong> demostró un nivel de exposición <strong>CRÍTICO</strong>. Con siete vulnerabilidades documentadas, fue posible pasar de cero conocimiento (black box) a compromiso total como <strong>root</strong> en el transcurso de una sesión de laboratorio. El vector inicial fue un archivo de texto con credenciales en claro accesible por HTTP — un error de administración básico con consecuencias devastadoras.</p>
+        <p>La cadena fue completamente lineal y previsible: <strong>readme.txt credenciales FTP inyección SSH Dirty COW root</strong>. Ningún paso requirió técnicas avanzadas. Todas las herramientas utilizadas son públicas y documentadas desde hace años. Nivel de riesgo global: <strong>CRÍTICO (CVSS 9.8)</strong>.</p>
+    </div>
+    <div class="concl-box orange">
+        <h3>// REFLEXIÓN TÉCNICA — APRENDIZAJES</h3>
+        <p>Esta actividad solidificó en la práctica lo estudiado en <strong>CNO IV — Programación WAP</strong>: la seguridad es un sistema de capas, no una medida aislada. Un único archivo mal administrado desencadenó una cadena que terminó en <strong>compromiso total del servidor</strong>.</p>
+        <p>El modelo <strong>CIA</strong> dejó de ser abstracto: las tres dimensiones resultaron comprometidas con consecuencias medibles, desde exfiltración de /etc/shadow hasta posible destrucción del sistema.</p>
+        <p><strong>Dirty COW (CVE-2016-5195)</strong> es un recordatorio de que parchear el kernel no es opcional: un exploit público de 2016, compilado con gcc estándar, obtuvo root en segundos. La metodología <strong>PTES</strong> demostró ser eficaz como marco estructurado para garantizar cobertura sistemática de todos los vectores.</p>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+    <h2><i class="fas fa-book"></i> 13 — Referencias Técnicas</h2>
+    <ul class="refs-list">
+        <li><i class="fas fa-external-link-alt"></i>NVD — CVE-2016-5195 (Dirty COW) · <a href="https://nvd.nist.gov/vuln/detail/CVE-2016-5195" target="_blank">nvd.nist.gov/vuln/detail/CVE-2016-5195</a></li>
+        <li><i class="fas fa-external-link-alt"></i>Exploit-DB · 40616.c — Dirty COW Local Privilege Escalation · <a href="https://www.exploit-db.com/exploits/40616" target="_blank">exploit-db.com/exploits/40616</a></li>
+        <li><i class="fas fa-external-link-alt"></i>Armour Infosec · My File Server 1 · <a href="https://www.vulnhub.com" target="_blank">vulnhub.com</a></li>
+        <li><i class="fas fa-external-link-alt"></i>PTES — Penetration Testing Execution Standard · <a href="http://www.pentest-standard.org" target="_blank">pentest-standard.org</a></li>
+        <li><i class="fas fa-external-link-alt"></i>Nmap Reference Guide · <a href="https://nmap.org/book/man.html" target="_blank">nmap.org/book/man.html</a></li>
+        <li><i class="fas fa-external-link-alt"></i>SMBMap — Samba Share Enumerator · <a href="https://github.com/ShawnDEvans/smbmap" target="_blank">github.com/ShawnDEvans/smbmap</a></li>
+        <li><i class="fas fa-external-link-alt"></i>Nikto Web Scanner · <a href="https://cirt.net/Nikto2" target="_blank">cirt.net/Nikto2</a></li>
+        <li><i class="fas fa-external-link-alt"></i>CentOS Security Advisory CESA-2016:2098 — kernel patch CVE-2016-5195</li>
+        <li><i class="fas fa-external-link-alt"></i>OWASP WSTG-INFO-09 — Testing for Sensitive Information in HTTP Headers</li>
+        <li><i class="fas fa-external-link-alt"></i>vsftpd Documentation — anonymous_enable directive · Securing FTP Services</li>
+    </ul>
+     <div style="text-align: center; margin: 40px 0; font-family: 'Courier New', monospace;">
+    <a href="../pdf/actividad13.pdf" 
+       download 
+       style="display: inline-block; 
+              padding: 12px 25px; 
+              border: 2px solid #b388ff; 
+              color: #b388ff; 
+              text-decoration: none; 
+              font-weight: bold; 
+              font-size: 1.1em; 
+              text-transform: uppercase; 
+              background: rgba(0, 255, 102, 0.1); 
+              box-shadow: 0 0 10px rgba(0, 255, 102, 0.2); 
+              transition: 0.3s;
+              letter-spacing: 1px;">
+        <i class="fas fa-file-pdf" style="margin-right: 10px;"></i> 
+        DESCARGAR PRESENTACIÓN EJECUTIVA (PDF)
+    </a>
+</div>
+</section>
+
+</main>
+</body>
+</html>
