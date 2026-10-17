@@ -117,6 +117,11 @@ main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:50px 20p
 .p2 .p-title{color:var(--c2);text-shadow:0 0 16px rgba(59,157,255,.35);}
 .p2 .pill{border-color:rgba(59,157,255,.35);color:var(--c2);background:rgba(59,157,255,.06);}
 .p2 .p-body{border-color:rgba(59,157,255,.15);background:rgba(59,157,255,.02);}
+.p2 .proj-card{border-color:rgba(59,157,255,.3);color:var(--txt);}
+.p2 .proj-card::before{background:var(--c2);}
+.p2 .proj-card:hover{border-color:rgba(59,157,255,.75);box-shadow:0 0 18px rgba(59,157,255,.18);}
+.p2 .proj-tag{background:rgba(59,157,255,.14);color:var(--c2);}
+.p2 .proj-cta{color:var(--c2);}
 
 .p3 .parcial-block{border:1px solid rgba(124,107,255,.3);}
 .p3 .parcial-block::after{border-top:2px solid var(--c3);border-right:2px solid var(--c3);}
@@ -145,9 +150,9 @@ footer span{color:var(--gd);}
   </nav>
   <div class="stats-bar">
     <div class="sb-item"><div class="sb-val" style="color:var(--c1);">01</div><div class="sb-lbl">Parcial 1</div></div>
-    <div class="sb-item"><div class="sb-val" style="color:var(--c2);">🔒</div><div class="sb-lbl">Parcial 2</div></div>
+    <div class="sb-item"><div class="sb-val" style="color:var(--c2);">01</div><div class="sb-lbl">Parcial 2</div></div>
     <div class="sb-item"><div class="sb-val" style="color:var(--c3);">🔒</div><div class="sb-lbl">Parcial 3</div></div>
-    <div class="sb-item"><div class="sb-val" style="color:var(--g);">01</div><div class="sb-lbl">Disponibles</div></div>
+    <div class="sb-item"><div class="sb-val" style="color:var(--g);">02</div><div class="sb-lbl">Disponibles</div></div>
   </div>
 </header>
 
@@ -191,18 +196,32 @@ footer span{color:var(--gd);}
 <div class="p2">
 <div class="parcial-block">
   <div class="p-header">
-    <div class="p-eyebrow">🔵 Parcial 2</div>
+    <div class="p-eyebrow">🔵 Parcial 2 · Completado</div>
     <div class="p-title">Proyecto — Parcial 2</div>
     <div class="p-pills">
-      <span class="pill">Contenido bloqueado</span>
+      <span class="pill">1 disponible</span>
+      <span class="pill">20/20 banderas</span>
     </div>
   </div>
   <div class="p-body">
-    <div class="denied-card">
-      <div class="dc-lock">🔒</div>
-      <div class="dc-title">ACCESO DENEGADO</div>
-      <div class="dc-sub">El proyecto de este parcial aún no está disponible. Se habilitará conforme avance la asignatura.</div>
-      <span class="dc-tag">Parcial 2</span>
+    <div class="proj-grid">
+      <a href="gobernanza.html" class="proj-card">
+        <div class="proj-icon-col">
+          <div class="proj-icon">🛡️</div>
+          <span class="proj-tag">PR02 · Parcial 2</span>
+        </div>
+        <div class="proj-content-col">
+          <div class="proj-name">Blindando la información: gobernanza y cumplimiento</div>
+          <div class="proj-desc">Auditoría de ciberseguridad completa sobre el entorno <strong style="color:#fff;">INTERAFAS-LAB</strong>, una infraestructura crítica simulada de agua (IT + OT). Se identificaron y explotaron <strong style="color:#fff;">20 vulnerabilidades</strong> encadenadas —desde fugas de información hasta la toma de control del proceso físico (alteración del setpoint del gateway OT hasta estado catastrófico)—. La entrega integra el Informe de Seguridad Ofensiva, la propuesta <strong style="color:#fff;">ISO/IEC 27001 (SGSI)</strong>, el Plan de Comunicación de Crisis y el Plan de Respuesta ante Incidentes.</div>
+          <div class="proj-meta">
+            <span>INTERAFAS-LAB · IT + OT</span>
+            <span>5 entregables</span>
+            <span>OWASP · MITRE ATT&CK ICS · NIST</span>
+            <span>Puntuación 65/65</span>
+          </div>
+          <div class="proj-cta">Ver proyecto →</div>
+        </div>
+      </a>
     </div>
   </div>
 </div>
