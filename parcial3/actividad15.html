@@ -1,1 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad 15 — La fotografía como testigo: metadatos GPS</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed #b388ff; padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .ok-badge { display:inline-block; border:2px solid #3b9dff; color:#3b9dff; font-weight:bold; padding:6px 20px; letter-spacing:3px; margin-top:10px; animation:blink-border 1.8s ease-in-out infinite; }
+        @keyframes blink-border { 0%,100%{box-shadow:0 0 6px #3b9dff;} 50%{box-shadow:0 0 20px #3b9dff,inset 0 0 10px rgba(59,157,255,.15);} }
+        .stat-row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+        .stat-card { background:rgba(179,136,255,.05); border:1px solid rgba(179,136,255,.3); border-top:2px solid #b388ff; padding:14px 20px; text-align:center; min-width:110px; }
+        .stat-card .sv { font-size:1.8rem; font-weight:900; color:#b388ff; line-height:1; }
+        .stat-card .sv.blue { color:#3b9dff; }
+        .stat-card .sl { font-size:.65rem; color:rgba(179,136,255,.6); letter-spacing:.1em; margin-top:3px; }
+        .lead { color:rgba(255,255,255,.85); line-height:1.85; font-size:.92rem; }
+        .lead strong { color:#b388ff; }
+        .tool-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:10px; }
+        .tool-card { border:1px solid rgba(179,136,255,.25); border-top:2px solid #b388ff; padding:16px 14px; background:rgba(179,136,255,.02); transition:transform .2s,border-top-color .2s; }
+        .tool-card:hover { transform:translateY(-2px); border-top-color:#3b9dff; }
+        .tool-card .ti { font-size:1.4rem; margin-bottom:6px; }
+        .tool-card .tn { font-weight:bold; color:#fff; margin-bottom:5px; font-size:.9rem; }
+        .tool-card .td { font-size:.75rem; color:#b388ff; line-height:1.6; }
+        .qa-table { width:100%; border-collapse:collapse; font-size:.86rem; margin-top:10px; }
+        .qa-table th { color:#b388ff; text-align:left; padding:9px 12px; font-size:.7rem; letter-spacing:.1em; border-bottom:1px solid rgba(179,136,255,.3); background:rgba(179,136,255,.06); }
+        .qa-table td { padding:9px 12px; border-bottom:1px solid rgba(179,136,255,.08); color:#fff; opacity:.92; vertical-align:top; }
+        .qa-table tr:hover td { background:rgba(179,136,255,.02); }
+        .qa-table .qn { color:rgba(255,255,255,.4); font-size:.75rem; width:34px; }
+        .qa-table .ans { color:#3b9dff; font-weight:bold; }
+        .map-panel { display:grid; grid-template-columns:1fr; gap:14px; margin-top:12px; }
+        @media(min-width:760px){ .map-panel { grid-template-columns:1fr 1fr; align-items:start; } }
+        .coord-box { border:1px solid rgba(59,157,255,.35); background:rgba(59,157,255,.04); padding:18px; }
+        .coord-box .cl { font-size:.62rem; letter-spacing:.15em; color:rgba(59,157,255,.7); margin-bottom:3px; }
+        .coord-box .cv { font-size:1.05rem; color:#fff; font-weight:bold; margin-bottom:14px; }
+        .coord-box .cv.big { color:#3b9dff; font-size:1.3rem; }
+        .coord-box a { display:inline-flex; align-items:center; gap:8px; color:#3b9dff; text-decoration:none; font-size:.82rem; border:1px solid rgba(59,157,255,.4); padding:8px 14px; margin-top:6px; transition:background .2s; word-break:break-all; }
+        .coord-box a:hover { background:rgba(59,157,255,.1); }
+        .terminal { background:rgba(0,0,0,.6); border:1px solid rgba(179,136,255,.2); border-left:3px solid #b388ff; padding:14px 16px; font-size:.78rem; color:#b388ff; overflow-x:auto; line-height:1.75; margin:12px 0; white-space:pre; font-family:'Courier New',monospace; }
+        .evid-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:12px; }
+        .evid-card { border:1px solid rgba(179,136,255,.25); overflow:hidden; background:rgba(0,0,0,.25); display:flex; flex-direction:column; align-items:center; }
+        .evid-card img { max-width:100%; width:auto; max-height:300px; display:block; margin:0 auto; image-rendering:-webkit-optimize-contrast; }
+        .evid-cap { padding:9px 12px; font-size:.72rem; color:rgba(179,136,255,.75); border-top:1px solid rgba(179,136,255,.15); background:rgba(0,0,0,.3); width:100%; box-sizing:border-box; }
+        .evid-cap b { color:#b388ff; }
+        .concl-box { border:1px solid rgba(179,136,255,.2); border-top:2px solid #b388ff; padding:20px; background:rgba(179,136,255,.02); }
+        .concl-box h3 { font-size:.82rem; letter-spacing:.12em; margin-bottom:12px; color:#b388ff; }
+        .concl-box p { font-size:.85rem; color:rgba(255,255,255,.8); margin-bottom:8px; line-height:1.8; }
+        .concl-box p:last-child { margin-bottom:0; }
+        .concl-box strong { color:#b388ff; }
+        .pdf-wrap { text-align:center; margin:40px 0 4px; font-family:'Courier New',monospace; }
+        .pdf-wrap a { display:inline-block; padding:12px 25px; border:2px solid #b388ff; color:#b388ff; text-decoration:none; font-weight:bold; font-size:1.1em; text-transform:uppercase; background:rgba(179,136,255,.1); box-shadow:0 0 10px rgba(179,136,255,.2); transition:.3s; letter-spacing:1px; }
+        .pdf-wrap a:hover { background:#b388ff; color:#0a0714; box-shadow:0 0 18px rgba(179,136,255,.4); }
+    </style>
+</head>
+<body>
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
 
+<main>
+    <a href="../actividades.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Actividades</a>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-camera-retro"></i> Actividad 15 — La fotografía como testigo: extracción de metadatos GPS</h2>
+        <div class="info-box">
+            <p><strong>CNO IV — Programación WAP</strong></p>
+            <p><strong>Alumna:</strong> Tristán Rivera Magdalena Yesenia — 174702 &nbsp;|&nbsp; <strong>Grupo:</strong> T37A</p>
+            <p><strong>Docente:</strong> Mtro. Servando López Contreras &nbsp;|&nbsp; <strong>Parcial:</strong> 3</p>
+            <p><strong>Fecha:</strong> 27 de octubre de 2026</p>
+            <div class="ok-badge">✓ GEOLOCALIZACIÓN OBTENIDA</div>
+        </div>
+        <div class="stat-row">
+            <div class="stat-card"><div class="sv">2</div><div class="sl">ARCHIVOS ANALIZADOS</div></div>
+            <div class="stat-card"><div class="sv">13</div><div class="sl">METADATOS EXTRAÍDOS</div></div>
+            <div class="stat-card"><div class="sv blue">GPS</div><div class="sl">UBICACIÓN HALLADA</div></div>
+            <div class="stat-card"><div class="sv blue">0</div><div class="sl">METADATOS TRAS LIMPIEZA</div></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-bullseye"></i> 01 — Objetivo</h2>
+        <p class="lead">
+            El análisis forense de metadatos permite reconstruir el <strong>origen, autoría y contexto</strong> de un archivo digital sin alterar su contenido visible. En esta actividad se analizaron dos muestras —un documento ofimático de la <strong>OIPC-INTERPOL</strong> y una fotografía capturada con un smartphone <strong>Xiaomi</strong>— con el fin de extraer sus metadatos, demostrar cómo una imagen puede convertirse en <strong>testigo geográfico</strong> de un hecho mediante sus coordenadas GPS, y finalmente aplicar la <strong>higiene de metadatos</strong> eliminando toda la información incrustada.
+        </p>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-toolbox"></i> 02 — Herramienta utilizada</h2>
+        <div class="tool-grid">
+            <div class="tool-card"><div class="ti">🔍</div><div class="tn">ExifTool / ExifToolGUI</div><div class="td">Lectura y escritura de metadatos EXIF, IPTC y XMP en imágenes y documentos.</div></div>
+            <div class="tool-card"><div class="ti">📄</div><div class="tn">Pestaña ALL / Custom</div><div class="td">Inspección de propiedades del DOCX: plantilla, autor, compañía y clasificación INTERPOL.</div></div>
+            <div class="tool-card"><div class="ti">🗺️</div><div class="tn">Pestaña GoogleMap</div><div class="td">Conversión de coordenadas GPS (DMS) a un punto geográfico verificable.</div></div>
+            <div class="tool-card"><div class="ti">🧽</div><div class="tn">Modify → Remove metadata</div><div class="td">Limpieza completa de los metadatos de la muestra fotográfica.</div></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-file-word"></i> 03 — Parte I · Documento <em>WOA database application form.docx</em></h2>
+        <table class="qa-table">
+            <tr><th>#</th><th>PREGUNTA</th><th>RESPUESTA</th></tr>
+            <tr><td class="qn">1</td><td>¿Cómo categorizó el archivo INTERPOL?</td><td class="ans">Unclassified</td></tr>
+            <tr><td class="qn">2</td><td>¿Qué template utilizó INTERPOL para elaborar el archivo?</td><td class="ans">G03 Basic Doc SP.dotx</td></tr>
+            <tr><td class="qn">3</td><td>¿Cuál fue el tiempo total de edición del fichero?</td><td class="ans">45 minutes</td></tr>
+            <tr><td class="qn">4</td><td>Compañía propietaria del fichero.</td><td class="ans">OIPC - INTERPOL</td></tr>
+            <tr><td class="qn">5</td><td>¿Quién realizó la última modificación?</td><td class="ans">Carolyn Lejeune</td></tr>
+            <tr><td class="qn">6</td><td>Fecha de creación del fichero.</td><td class="ans">2019:05:03 15:35:00Z</td></tr>
+            <tr><td class="qn">7</td><td>Creador del fichero.</td><td class="ans">Carolyn Lejeune</td></tr>
+        </table>
+        <div class="evid-grid">
+            <div class="evid-card">
+                <img src="fig1-docx-meta.png" alt="Metadatos del documento DOCX">
+                <div class="evid-cap"><b>Figura 1.</b> Propiedades del DOCX: Interpol Classification (Unclassified), Template, Total Edit Time, Company, Last Modified By, Create Date y Creator.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-image"></i> 04 — Parte II · Fotografía <em>XiaomiMiA2Lite.jpg</em></h2>
+        <table class="qa-table">
+            <tr><th>#</th><th>PREGUNTA</th><th>RESPUESTA</th></tr>
+            <tr><td class="qn">1</td><td>¿Cuál fue el valor ISO utilizado?</td><td class="ans">ISO 100</td></tr>
+            <tr><td class="qn">2</td><td>Longitud focal de la cámara.</td><td class="ans">3.8 mm</td></tr>
+            <tr><td class="qn">3</td><td>¿Se utilizó Flash para obtener la imagen?</td><td class="ans">No — Off, Did not fire</td></tr>
+            <tr><td class="qn">4</td><td>Fecha de creación del archivo.</td><td class="ans">2020:05:28 18:11:41</td></tr>
+        </table>
+        <div class="evid-grid">
+            <div class="evid-card">
+                <img src="fig2-exif.png" alt="Metadatos EXIF de la fotografía">
+                <div class="evid-cap"><b>Figura 2.</b> EXIF de la cámara: ISO 100, F2.2, Flash «Off, Did not fire», Focal Length 3.8 mm y modelo Xiaomi Mi A2 Lite.</div>
+            </div>
+            <div class="evid-card">
+                <img src="fig3-gps.png" alt="Fecha y coordenadas GPS">
+                <div class="evid-cap"><b>Figura 3.</b> Date/Time Original y datos GPS incrustados: 51.253610° N, 0.539426° W, altitud 96.754 m.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-map-marked-alt" style="color:#3b9dff"></i> 05 — Pregunta 5 · Geolocalización GPS</h2>
+        <p class="lead">A partir de las etiquetas <strong>GPSLatitude</strong> y <strong>GPSLongitude</strong> incrustadas en la fotografía, se convirtieron las coordenadas de grados-minutos-segundos (DMS) a decimal y se verificó el punto exacto donde fue tomada la imagen.</p>
+        <div class="map-panel">
+            <div class="coord-box">
+                <div class="cl">LATITUD (DMS)</div>
+                <div class="cv">51 deg 15' 12.99" N</div>
+                <div class="cl">LONGITUD (DMS)</div>
+                <div class="cv">0 deg 32' 21.93" W</div>
+                <div class="cl">COORDENADAS DECIMALES</div>
+                <div class="cv big">51.253610, -0.539426</div>
+                <div class="cl">LUGAR EXACTO</div>
+                <div class="cv">Guildford, Surrey, Inglaterra (Reino Unido)</div>
+                <a href="https://www.google.com/maps?q=51.253610,-0.539426" target="_blank"><i class="fas fa-location-dot"></i> Abrir en Google Maps</a>
+            </div>
+            <div class="evid-card">
+                <img src="fig4-mapa.png" alt="Ubicación en Google Maps - Guildford">
+                <div class="evid-cap"><b>Figura 4.</b> Punto geográfico obtenido de las coordenadas GPS: Guildford, Surrey (Reino Unido).</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-eraser"></i> 06 — Pregunta 6 · Eliminación de metadatos</h2>
+        <p class="lead">Como medida de <strong>higiene digital</strong>, se eliminaron todos los metadatos de la muestra fotográfica. Tras la limpieza, la imagen ya no conserva etiquetas EXIF, de cámara ni de GPS: deja de ser rastreable geográficamente.</p>
+        <div class="terminal">exiftool -all= XiaomiMiA2Lite.jpg
+    1 image files updated</div>
+        <div class="evid-grid">
+            <div class="evid-card">
+                <img src="fig5-eliminado.png" alt="Imagen sin metadatos">
+                <div class="evid-cap"><b>Figura 5.</b> Tras la eliminación, la imagen ya no conserva etiquetas EXIF, GPS ni de cámara.</div>
+            </div>
+            <div class="evid-card">
+                <img src="fig6-log.png" alt="Registro de ExifTool">
+                <div class="evid-cap"><b>Figura 6.</b> Registro de ExifTool confirmando la operación: «1 image files updated».</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> 07 — Conclusión</h2>
+        <div class="concl-box">
+            <h3>// REFLEXIÓN TÉCNICA</h3>
+            <p>Esta actividad demostró que una fotografía puede funcionar como <strong>testigo silencioso</strong> de un hecho: sus metadatos EXIF revelaron el dispositivo, los parámetros de captura, la fecha exacta y —lo más sensible— las <strong>coordenadas GPS</strong> que ubicaron la toma en Guildford, Surrey. En un contexto de informática forense, ese dato puede situar a una persona o a un objeto en un lugar y momento concretos.</p>
+            <p>El documento de INTERPOL, por su parte, conservaba su <strong>autoría, plantilla, compañía y clasificación</strong>, información que delata la trazabilidad interna de un archivo aparentemente anónimo.</p>
+            <p>La contraparte es la <strong>privacidad</strong>: eliminar los metadatos antes de publicar o compartir un archivo evita exponer la ubicación y la identidad. La misma herramienta que investiga es la que protege.</p>
+        </div>
+        <div class="pdf-wrap">
+            <a href="../pdf/actividad15.pdf" download><i class="fas fa-file-pdf" style="margin-right:10px;"></i> Descargar reporte completo (PDF)</a>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>
