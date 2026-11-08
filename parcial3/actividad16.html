@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad 16 — La verdad en los bits: FTK Imager</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed #b388ff; padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .ok-badge { display:inline-block; border:2px solid #3b9dff; color:#3b9dff; font-weight:bold; padding:6px 20px; letter-spacing:3px; margin-top:10px; animation:blink-border 1.8s ease-in-out infinite; }
+        @keyframes blink-border { 0%,100%{box-shadow:0 0 6px #3b9dff;} 50%{box-shadow:0 0 20px #3b9dff,inset 0 0 10px rgba(59,157,255,.15);} }
+        .stat-row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+        .stat-card { background:rgba(179,136,255,.05); border:1px solid rgba(179,136,255,.3); border-top:2px solid #b388ff; padding:14px 20px; text-align:center; min-width:110px; }
+        .stat-card .sv { font-size:1.8rem; font-weight:900; color:#b388ff; line-height:1; }
+        .stat-card .sv.blue { color:#3b9dff; }
+        .stat-card .sl { font-size:.65rem; color:rgba(179,136,255,.6); letter-spacing:.1em; margin-top:3px; }
+        .lead { color:rgba(255,255,255,.85); line-height:1.85; font-size:.92rem; }
+        .lead strong { color:#b388ff; }
+        .tool-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:10px; }
+        .tool-card { border:1px solid rgba(179,136,255,.25); border-top:2px solid #b388ff; padding:16px 14px; background:rgba(179,136,255,.02); transition:transform .2s,border-top-color .2s; }
+        .tool-card:hover { transform:translateY(-2px); border-top-color:#3b9dff; }
+        .tool-card .ti { font-size:1.4rem; margin-bottom:6px; }
+        .tool-card .tn { font-weight:bold; color:#fff; margin-bottom:5px; font-size:.9rem; }
+        .tool-card .td { font-size:.75rem; color:#b388ff; line-height:1.6; }
+        .qa-table { width:100%; border-collapse:collapse; font-size:.86rem; margin-top:10px; }
+        .qa-table th { color:#b388ff; text-align:left; padding:9px 12px; font-size:.7rem; letter-spacing:.1em; border-bottom:1px solid rgba(179,136,255,.3); background:rgba(179,136,255,.06); }
+        .qa-table td { padding:9px 12px; border-bottom:1px solid rgba(179,136,255,.08); color:#fff; opacity:.92; vertical-align:top; }
+        .qa-table tr:hover td { background:rgba(179,136,255,.02); }
+        .qa-table .qn { color:rgba(255,255,255,.4); font-size:.75rem; width:34px; }
+        .qa-table .ans { color:#3b9dff; font-weight:bold; }
+        .map-panel { display:grid; grid-template-columns:1fr; gap:14px; margin-top:12px; }
+        @media(min-width:760px){ .map-panel { grid-template-columns:1fr 1fr; align-items:start; } }
+        .coord-box { border:1px solid rgba(59,157,255,.35); background:rgba(59,157,255,.04); padding:18px; }
+        .coord-box .cl { font-size:.62rem; letter-spacing:.15em; color:rgba(59,157,255,.7); margin-bottom:3px; }
+        .coord-box .cv { font-size:1.05rem; color:#fff; font-weight:bold; margin-bottom:14px; }
+        .coord-box .cv.big { color:#3b9dff; font-size:1.3rem; }
+        .coord-box a { display:inline-flex; align-items:center; gap:8px; color:#3b9dff; text-decoration:none; font-size:.82rem; border:1px solid rgba(59,157,255,.4); padding:8px 14px; margin-top:6px; transition:background .2s; word-break:break-all; }
+        .coord-box a:hover { background:rgba(59,157,255,.1); }
+        .terminal { background:rgba(0,0,0,.6); border:1px solid rgba(179,136,255,.2); border-left:3px solid #b388ff; padding:14px 16px; font-size:.78rem; color:#b388ff; overflow-x:auto; line-height:1.75; margin:12px 0; white-space:pre; font-family:'Courier New',monospace; }
+        .evid-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:12px; }
+        .evid-card { border:1px solid rgba(179,136,255,.25); overflow:hidden; background:rgba(0,0,0,.25); display:flex; flex-direction:column; align-items:center; }
+        .evid-card img { max-width:100%; width:auto; max-height:300px; display:block; margin:0 auto; image-rendering:-webkit-optimize-contrast; }
+        .evid-cap { padding:9px 12px; font-size:.72rem; color:rgba(179,136,255,.75); border-top:1px solid rgba(179,136,255,.15); background:rgba(0,0,0,.3); width:100%; box-sizing:border-box; }
+        .evid-cap b { color:#b388ff; }
+        .concl-box { border:1px solid rgba(179,136,255,.2); border-top:2px solid #b388ff; padding:20px; background:rgba(179,136,255,.02); }
+        .concl-box h3 { font-size:.82rem; letter-spacing:.12em; margin-bottom:12px; color:#b388ff; }
+        .concl-box p { font-size:.85rem; color:rgba(255,255,255,.8); margin-bottom:8px; line-height:1.8; }
+        .concl-box p:last-child { margin-bottom:0; }
+        .concl-box strong { color:#b388ff; }
+        .pdf-wrap { text-align:center; margin:40px 0 4px; font-family:'Courier New',monospace; }
+        .pdf-wrap a { display:inline-block; padding:12px 25px; border:2px solid #b388ff; color:#b388ff; text-decoration:none; font-weight:bold; font-size:1.1em; text-transform:uppercase; background:rgba(179,136,255,.1); box-shadow:0 0 10px rgba(179,136,255,.2); transition:.3s; letter-spacing:1px; }
+        .pdf-wrap a:hover { background:#b388ff; color:#0a0714; box-shadow:0 0 18px rgba(179,136,255,.4); }
+    </style>
+</head>
+<body>
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
+
+<main>
+    <a href="../actividades.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Actividades</a>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-hard-drive"></i> Actividad 16 — La verdad en los bits: adquisición forense con FTK Imager</h2>
+        <div class="info-box">
+            <p><strong>CNO IV — Programación WAP</strong></p>
+            <p><strong>Alumna:</strong> Tristán Rivera Magdalena Yesenia — 174702 &nbsp;|&nbsp; <strong>Grupo:</strong> T37A</p>
+            <p><strong>Docente:</strong> Mtro. Servando López Contreras &nbsp;|&nbsp; <strong>Parcial:</strong> 3</p>
+            <p><strong>Fecha:</strong> 8 de noviembre de 2026</p>
+            <div class="ok-badge">✓ IMAGEN VERIFICADA — HASHES MATCH</div>
+        </div>
+        <div class="stat-row">
+            <div class="stat-card"><div class="sv">dd</div><div class="sl">FORMATO RAW</div></div>
+            <div class="stat-card"><div class="sv blue">15,248,832</div><div class="sl">SECTORES COPIADOS</div></div>
+            <div class="stat-card"><div class="sv">7445</div><div class="sl">MB DE ORIGEN</div></div>
+            <div class="stat-card"><div class="sv blue">MD5+SHA1</div><div class="sl">VERIFICADOS ✓</div></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-bullseye"></i> 01 — Objetivo</h2>
+        <p class="lead">
+            El análisis forense digital exige trabajar siempre sobre <strong>copias exactas bit a bit</strong> de la evidencia, nunca sobre el original, para preservar su integridad y su validez legal. En esta actividad, como parte del Laboratorio de Informática Forense (LIF), se realizó la <strong>adquisición de una memoria USB</strong> mediante una imagen forense cruda con <strong>FTK Imager</strong>, garantizando mediante funciones <em>hash</em> (MD5 y SHA-1) que la copia es idéntica al dispositivo original.
+        </p>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-toolbox"></i> 02 — Herramienta: FTK Imager</h2>
+        <div class="tool-grid">
+            <div class="tool-card"><div class="ti">💽</div><div class="tn">FTK Imager 4.3.1.1</div><div class="td">Herramienta forense gratuita de AccessData para crear imágenes exactas de dispositivos de almacenamiento.</div></div>
+            <div class="tool-card"><div class="ti">🔒</div><div class="tn">Copia bit a bit</div><div class="td">Clona todos los sectores sin alterar el original; el bloqueador de escritura se omite solo por tratarse de práctica.</div></div>
+            <div class="tool-card"><div class="ti">#️⃣</div><div class="tn">Verificación por hash</div><div class="td">Calcula MD5 y SHA-1 de la imagen y los compara para probar que no hubo alteración.</div></div>
+            <div class="tool-card"><div class="ti">📦</div><div class="tn">Formato Raw (dd)</div><div class="td">Volcado crudo de lectura universal, compatible con Autopsy, The Sleuth Kit, EnCase, etc.</div></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-list-ol"></i> 03 — Proceso de adquisición</h2>
+        <p class="lead">Se instaló FTK Imager y se ejecutó <strong>File → Create Disk Image → Physical Drive</strong>, seleccionando la memoria USB (\\.\PHYSICALDRIVE1) como origen. Se configuró la información de la evidencia, el formato <strong>Raw (dd)</strong> y la carpeta de destino, y se inició la adquisición con verificación activada.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act16-interfaz.png" alt="Interfaz FTK Imager"><div class="evid-cap"><b>Fig. 1.</b> Instancia de FTK Imager 4.3.1.1 en ejecución.</div></div>
+            <div class="evid-card"><img src="act16-source.png" alt="Origen PHYSICALDRIVE1"><div class="evid-cap"><b>Fig. 2.</b> Origen seleccionado: \\.\PHYSICALDRIVE1 (memoria USB).</div></div>
+            <div class="evid-card"><img src="act16-evidence.png" alt="Evidence Item Information"><div class="evid-cap"><b>Fig. 3.</b> Datos del caso: número, descripción, examinador y notas.</div></div>
+            <div class="evid-card"><img src="act16-destino.png" alt="Destino de la imagen"><div class="evid-cap"><b>Fig. 4.</b> Destino InfoCrim13, formato dd, sin fragmentar.</div></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-circle-check" style="color:#3b9dff"></i> 04 — Resultados de la adquisición</h2>
+        <table class="qa-table">
+            <tr><th>DATO</th><th>VALOR</th></tr>
+            <tr><td>Dispositivo origen</td><td class="ans">Kingston DataTraveler 2.0 USB — S/N CE8F64010C0A</td></tr>
+            <tr><td>Sectores copiados</td><td class="ans">15,248,832 (512 bytes c/u · 7445 MB)</td></tr>
+            <tr><td>Hora de inicio</td><td class="ans">8 nov 2026 — 00:53:47</td></tr>
+            <tr><td>Hora de término</td><td class="ans">8 nov 2026 — 01:01:12</td></tr>
+            <tr><td>Tiempo transcurrido</td><td class="ans">7 min 25 s</td></tr>
+            <tr><td>Hash MD5</td><td class="ans">5df8a05850f5a345151dc02e48de8b28 — Match</td></tr>
+            <tr><td>Hash SHA-1</td><td class="ans">9a2625e32c0e1f6c8dae246e6f528c3ec7061b55 — Match</td></tr>
+            <tr><td>Archivos generados</td><td class="ans">2 (imagen .001 + reporte .001.txt)</td></tr>
+        </table>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act16-verify.png" alt="Verify Results"><div class="evid-cap"><b>Fig. 5.</b> Drive/Image Verify Results: MD5 y SHA-1 con resultado «Match», sin bloques defectuosos.</div></div>
+            <div class="evid-card"><img src="act16-archivos.png" alt="Archivos generados"><div class="evid-cap"><b>Fig. 6.</b> Carpeta InfoCrim13: imagen .001 (7.6 GB) y reporte .001.txt.</div></div>
+            <div class="evid-card"><img src="act16-txt.png" alt="Reporte txt"><div class="evid-cap"><b>Fig. 7.</b> Reporte .txt con hashes, sectores y marcas de tiempo.</div></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-circle-question"></i> 05 — Preguntas teóricas</h2>
+        <table class="qa-table">
+            <tr><th>PREGUNTA</th><th>RESPUESTA</th></tr>
+            <tr><td>¿Qué es el formato Raw (dd)?</td><td>Copia cruda bit a bit, sector por sector, <b>sin compresión ni metadatos</b> incrustados. De lectura universal; los hashes se guardan aparte en el .txt.</td></tr>
+            <tr><td>¿Qué es el formato E01?</td><td><i>EnCase Evidence File</i>, formato propietario de EnCase. Guarda la imagen <b>con metadatos del caso</b>, compresión opcional y verificación de integridad integrada.</td></tr>
+            <tr><td>Diferencia SMART vs E01</td><td>Ambos son <i>Expert Witness Format</i> (metadatos + compresión + verificación). El <b>E01</b> es de EnCase, estándar de la industria y más compatible; el <b>SMART</b> es nativo de ASR Data, más usado en Linux y menos difundido.</td></tr>
+        </table>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> 06 — Conclusión</h2>
+        <div class="concl-box">
+            <h3>// REFLEXIÓN TÉCNICA</h3>
+            <p>La adquisición demostró el principio esencial de la informática forense: <strong>preservar la evidencia sin alterarla</strong>. Se obtuvo una copia exacta de 15,248,832 sectores de la memoria USB y, al coincidir los hashes <strong>MD5 y SHA-1</strong> entre la imagen y el dispositivo (resultado «Match», sin bloques defectuosos), queda probada la <strong>integridad</strong> de la copia.</p>
+            <p>El reporte .txt generado por FTK Imager funciona como <strong>cadena de custodia</strong>: documenta caso, examinador, tiempos y hashes, dando soporte legal al análisis posterior. Trabajar sobre esta imagen —y nunca sobre el original— es lo que garantiza la <strong>verificabilidad y reproducibilidad</strong> de la investigación.</p>
+        </div>
+        <div class="pdf-wrap">
+            <a href="../pdf/actividad16.pdf" download><i class="fas fa-file-pdf" style="margin-right:10px;"></i> Descargar reporte completo (PDF)</a>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>
