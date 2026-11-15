@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad 19 — Adquisición forense en caliente (PowerShell)</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed #b388ff; padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .ok-badge { display:inline-block; border:2px solid #3b9dff; color:#3b9dff; font-weight:bold; padding:6px 20px; letter-spacing:3px; margin-top:10px; animation:blink-border 1.8s ease-in-out infinite; }
+        @keyframes blink-border { 0%,100%{box-shadow:0 0 6px #3b9dff;} 50%{box-shadow:0 0 20px #3b9dff,inset 0 0 10px rgba(59,157,255,.15);} }
+        .stat-row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+        .stat-card { background:rgba(179,136,255,.05); border:1px solid rgba(179,136,255,.3); border-top:2px solid #b388ff; padding:14px 20px; text-align:center; min-width:110px; }
+        .stat-card .sv { font-size:1.8rem; font-weight:900; color:#b388ff; line-height:1; }
+        .stat-card .sv.blue { color:#3b9dff; }
+        .stat-card .sl { font-size:.65rem; color:rgba(179,136,255,.6); letter-spacing:.1em; margin-top:3px; }
+        .lead { color:rgba(255,255,255,.85); line-height:1.85; font-size:.92rem; }
+        .lead strong { color:#b388ff; }
+        .tool-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:10px; }
+        .tool-card { border:1px solid rgba(179,136,255,.25); border-top:2px solid #b388ff; padding:16px 14px; background:rgba(179,136,255,.02); transition:transform .2s,border-top-color .2s; }
+        .tool-card:hover { transform:translateY(-2px); border-top-color:#3b9dff; }
+        .tool-card .ti { font-size:1.4rem; margin-bottom:6px; }
+        .tool-card .tn { font-weight:bold; color:#fff; margin-bottom:5px; font-size:.9rem; }
+        .tool-card .td { font-size:.75rem; color:#b388ff; line-height:1.6; }
+        .qa-table { width:100%; border-collapse:collapse; font-size:.86rem; margin-top:10px; }
+        .qa-table th { color:#b388ff; text-align:left; padding:9px 12px; font-size:.7rem; letter-spacing:.1em; border-bottom:1px solid rgba(179,136,255,.3); background:rgba(179,136,255,.06); }
+        .qa-table td { padding:9px 12px; border-bottom:1px solid rgba(179,136,255,.08); color:#fff; opacity:.92; vertical-align:top; }
+        .qa-table tr:hover td { background:rgba(179,136,255,.02); }
+        .qa-table .qn { color:rgba(255,255,255,.4); font-size:.75rem; width:34px; }
+        .qa-table .ans { color:#3b9dff; font-weight:bold; }
+        .map-panel { display:grid; grid-template-columns:1fr; gap:14px; margin-top:12px; }
+        @media(min-width:760px){ .map-panel { grid-template-columns:1fr 1fr; align-items:start; } }
+        .coord-box { border:1px solid rgba(59,157,255,.35); background:rgba(59,157,255,.04); padding:18px; }
+        .coord-box .cl { font-size:.62rem; letter-spacing:.15em; color:rgba(59,157,255,.7); margin-bottom:3px; }
+        .coord-box .cv { font-size:1.05rem; color:#fff; font-weight:bold; margin-bottom:14px; }
+        .coord-box .cv.big { color:#3b9dff; font-size:1.3rem; }
+        .coord-box a { display:inline-flex; align-items:center; gap:8px; color:#3b9dff; text-decoration:none; font-size:.82rem; border:1px solid rgba(59,157,255,.4); padding:8px 14px; margin-top:6px; transition:background .2s; word-break:break-all; }
+        .coord-box a:hover { background:rgba(59,157,255,.1); }
+        .terminal { background:rgba(0,0,0,.6); border:1px solid rgba(179,136,255,.2); border-left:3px solid #b388ff; padding:14px 16px; font-size:.78rem; color:#b388ff; overflow-x:auto; line-height:1.75; margin:12px 0; white-space:pre; font-family:'Courier New',monospace; }
+        .evid-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:12px; }
+        .evid-card { border:1px solid rgba(179,136,255,.25); overflow:hidden; background:rgba(0,0,0,.25); display:flex; flex-direction:column; align-items:center; }
+        .evid-card img { max-width:100%; width:auto; max-height:300px; display:block; margin:0 auto; image-rendering:-webkit-optimize-contrast; }
+        .evid-cap { padding:9px 12px; font-size:.72rem; color:rgba(179,136,255,.75); border-top:1px solid rgba(179,136,255,.15); background:rgba(0,0,0,.3); width:100%; box-sizing:border-box; }
+        .evid-cap b { color:#b388ff; }
+        .concl-box { border:1px solid rgba(179,136,255,.2); border-top:2px solid #b388ff; padding:20px; background:rgba(179,136,255,.02); }
+        .concl-box h3 { font-size:.82rem; letter-spacing:.12em; margin-bottom:12px; color:#b388ff; }
+        .concl-box p { font-size:.85rem; color:rgba(255,255,255,.8); margin-bottom:8px; line-height:1.8; }
+        .concl-box p:last-child { margin-bottom:0; }
+        .concl-box strong { color:#b388ff; }
+        .pdf-wrap { text-align:center; margin:40px 0 4px; font-family:'Courier New',monospace; }
+        .pdf-wrap a { display:inline-block; padding:12px 25px; border:2px solid #b388ff; color:#b388ff; text-decoration:none; font-weight:bold; font-size:1.1em; text-transform:uppercase; background:rgba(179,136,255,.1); box-shadow:0 0 10px rgba(179,136,255,.2); transition:.3s; letter-spacing:1px; }
+        .pdf-wrap a:hover { background:#b388ff; color:#0a0714; box-shadow:0 0 18px rgba(179,136,255,.4); }
+
+        /* evidencia grande: una por fila, ancho completo (capturas de terminal) */
+        .evid-grid { grid-template-columns:1fr; gap:18px; }
+        .evid-card img { max-height:none; width:100%; }
+        /* evidencia grande: una por fila, ancho completo */
+        .evid-grid { grid-template-columns:1fr; gap:18px; }
+        .evid-card img { max-height:none; width:100%; }
+
+        .cmd-line { font-family:'Courier New',monospace; font-size:.8rem; color:#0a0714; background:#b388ff; display:inline-block; padding:6px 12px; border-radius:3px; margin:2px 0 10px; }
+    </style>
+</head>
+<body>
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
+
+<main>
+    <a href="../actividades.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Actividades</a>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-terminal"></i> Actividad 19 — Los primeros minutos cuentan: adquisición forense en caliente</h2>
+        <div class="info-box">
+            <p><strong>CNO IV — Programación WAP</strong></p>
+            <p><strong>Alumna:</strong> Tristán Rivera Magdalena Yesenia — 174702 &nbsp;|&nbsp; <strong>Grupo:</strong> T37A</p>
+            <p><strong>Docente:</strong> Mtro. Servando López Contreras &nbsp;|&nbsp; <strong>Parcial:</strong> 3</p>
+            <p><strong>Equipo analizado:</strong> LC32-26 (Windows 11 Pro, dominio upslp.edu.mx)</p>
+            <div class="ok-badge">✓ 20 COMANDOS DE ADQUISICIÓN</div>
+        </div>
+        <div class="stat-row">
+            <div class="stat-card"><div class="sv">20</div><div class="sl">COMANDOS</div></div>
+            <div class="stat-card"><div class="sv blue">PS</div><div class="sl">POWERSHELL + CMD</div></div>
+            <div class="stat-card"><div class="sv">EN VIVO</div><div class="sl">SISTEMA EN CALIENTE</div></div>
+            <div class="stat-card"><div class="sv blue">LC32-26</div><div class="sl">EQUIPO</div></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-bullseye"></i> Objetivo</h2>
+        <p class="lead">Como primer respondiente, se realizó la <strong>adquisición de evidencia volátil</strong> en un sistema Windows en caliente mediante 20 comandos de línea (PowerShell y CMD), documentando el comando, su utilidad y el resultado. Se respetó el <strong>orden de volatilidad</strong>: primero la información que se pierde al apagar (hora, procesos, conexiones, usuarios) y después la persistente (registro, tareas, logs, hosts).</p>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 01 — Fecha y hora del sistema</h2>
+        <div class="cmd-line">Get-Date</div>
+        <p class="lead">Miércoles 04/11/2026 19:13:45 (UTC-06). Marca temporal que encabeza la cadena de custodia.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p01-1.png" alt="Punto 1"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 02 — Procesos en ejecución</h2>
+        <div class="cmd-line">Get-Process</div>
+        <p class="lead">Procesos activos en memoria: chrome, svchost, csrss, ctfmon, Defender… Útil para detectar procesos anómalos.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p02-1.png" alt="Punto 2"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 03 — Servicios: CMD vs PowerShell</h2>
+        <div class="cmd-line">net start  (CMD)   ·   Get-Service  (PowerShell)   ·   sc.exe query</div>
+        <p class="lead">Get-Service (PowerShell) lista TODOS los servicios (activos y detenidos) con su Status; net start / sc.exe (símbolo del sistema) muestran solo los activos, con más detalle técnico.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p03-1.png" alt="Punto 3"></div>
+            <div class="evid-card"><img src="act19-p03-2.png" alt="Punto 3"></div>
+            <div class="evid-card"><img src="act19-p03-3.png" alt="Punto 3"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 04 — Usuarios actualmente logueados</h2>
+        <div class="cmd-line">.\NetUsers.exe /local</div>
+        <p class="lead">Usuario activo: UPSLP\174702 — Magdalena Yesenia Tristán Rivera.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p04-1.png" alt="Punto 4"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 05 — Usuarios en el historial</h2>
+        <div class="cmd-line">.\NetUsers.exe /history /local</div>
+        <p class="lead">Historial de cuentas del dominio UPSLP con su último inicio de sesión (Last Logon).</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p05-1.png" alt="Punto 5"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 06 — Información de red</h2>
+        <div class="cmd-line">ipconfig /all</div>
+        <p class="lead">Host LC32-26, IPv4 192.168.31.147/24, gateway 192.168.31.1, DNS upslp.edu.mx.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p06-1.png" alt="Punto 6"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 07 — Nombres NetBIOS</h2>
+        <div class="cmd-line">nbtstat -n</div>
+        <p class="lead">LC32-26 &lt;20&gt;/&lt;00&gt; y grupo UPSLP &lt;00&gt;, en estado Registrado.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p07-1.png" alt="Punto 7"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 08 — Conexiones establecidas</h2>
+        <div class="cmd-line">netstat -an</div>
+        <p class="lead">Conexiones ESTABLISHED, destacando varias sesiones a 128.14.152.195:1550.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p08-1.png" alt="Punto 8"></div>
+            <div class="evid-card"><img src="act19-p08-2.png" alt="Punto 8"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 09 — Aplicaciones ↔ puerto</h2>
+        <div class="cmd-line">netstat -anob  (admin)   ·   netstat -ano   ·   Get-NetTCPConnection</div>
+        <p class="lead">Con admin, netstat -anob muestra el ejecutable de cada puerto: svchost, msedge, Discord, OneDrive, asus_framework… (en la escuela devolvía «requiere elevación»).</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p09-1.png" alt="Punto 9"></div>
+            <div class="evid-card"><img src="act19-p09-2.png" alt="Punto 9"></div>
+            <div class="evid-card"><img src="act19-p09-3.png" alt="Punto 9"></div>
+            <div class="evid-card"><img src="act19-p09-4.png" alt="Punto 9"></div>
+            <div class="evid-card"><img src="act19-p09-5.png" alt="Punto 9"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 10 — Dominios accedidos (caché DNS)</h2>
+        <div class="cmd-line">ipconfig /displaydns</div>
+        <p class="lead">Dominios resueltos recientemente: array*.prod.do.dsp.mp.microsoft.com, gfe.nvidia.com, etc.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p10-1.png" alt="Punto 10"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 11 — Dirección física ↔ lógica (ARP)</h2>
+        <div class="cmd-line">arp -a</div>
+        <p class="lead">Tabla ARP con la relación IP↔MAC de los equipos del segmento 192.168.31.0/24.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p11-1.png" alt="Punto 11"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 12 — Redes WiFi</h2>
+        <div class="cmd-line">netsh wlan show profiles</div>
+        <p class="lead">Sin perfiles: equipo cableado, el servicio inalámbrico (wlansvc) no está en ejecución.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p12-1.png" alt="Punto 12"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 13 — Histórico de comandos</h2>
+        <div class="cmd-line">Get-Content (Get-PSReadlineOption).HistorySavePath</div>
+        <p class="lead">Secuencia de comandos ejecutados por el usuario en PowerShell (evidencia de actividad).</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p13-1.png" alt="Punto 13"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 14 — Unidades mapeadas</h2>
+        <div class="cmd-line">net use</div>
+        <p class="lead">Unidad de red P: → \\DC\Publico (compartición del controlador de dominio).</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p14-1.png" alt="Punto 14"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 15 — Recursos compartidos</h2>
+        <div class="cmd-line">net share</div>
+        <p class="lead">Comparticiones administrativas por defecto: C$, IPC$ y ADMIN$.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p15-1.png" alt="Punto 15"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 16 — Información del equipo</h2>
+        <div class="cmd-line">systeminfo</div>
+        <p class="lead">LC32-26, Windows 11 Pro (10.0.22621), Lenovo, 16 GB RAM, dominio upslp.edu.mx, servidor \\DC.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p16-1.png" alt="Punto 16"></div>
+            <div class="evid-card"><img src="act19-p16-2.png" alt="Punto 16"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 17 — Tareas programadas</h2>
+        <div class="cmd-line">schtasks /query /fo LIST /v</div>
+        <p class="lead">Tareas como «Adobe Acrobat Update Task» (AdobeARM.exe al inicio de sesión) — punto de revisión de persistencia.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p17-1.png" alt="Punto 17"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 18 — Exportar logs del sistema</h2>
+        <div class="cmd-line">wevtutil epl  (admin)   ·   Get-WinEvent → CSV</div>
+        <p class="lead">Con admin se exportaron System.evtx, Security.evtx y Application.evtx al Escritorio (incluido Security, que requería elevación).</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p18-1.png" alt="Punto 18"></div>
+            <div class="evid-card"><img src="act19-p18-2.png" alt="Punto 18"></div>
+            <div class="evid-card"><img src="act19-p18-3.png" alt="Punto 18"></div>
+            <div class="evid-card"><img src="act19-p18-4.png" alt="Punto 18"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 19 — Fichero Hosts</h2>
+        <div class="cmd-line">Get-Content C:\Windows\System32\drivers\etc\hosts</div>
+        <p class="lead">Fichero hosts por defecto, sin entradas de redirección: limpio, sin manipulación.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p19-1.png" alt="Punto 19"></div>
+        </div>
+    </section>
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 20 — Árbol por fecha de creación</h2>
+        <div class="cmd-line">Get-ChildItem -Recurse | Sort-Object CreationTime</div>
+        <p class="lead">Línea de tiempo de creación de archivos del usuario (material del curso, laboratorio INTERAFAS, Act19…).</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="act19-p20-1.png" alt="Punto 20"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-flag-checkered"></i> Conclusión</h2>
+        <div class="concl-box">
+            <h3>// REFLEXIÓN TÉCNICA</h3>
+            <p>La adquisición en caliente permitió capturar la <strong>evidencia volátil</strong> del equipo antes de apagarlo: procesos, conexiones de red, usuarios, caché DNS y ARP — datos que desaparecerían con el reinicio. Cada comando documentado conforma la <strong>cadena de custodia</strong> del primer respondiente.</p>
+            <p>El ejercicio se completó primero en el laboratorio (con las limitaciones de un equipo sin CMD ni administrador) y después se amplió con <strong>CMD y privilegios de administrador</strong> en los puntos 3, 9 y 18, mostrando las versiones completas de los comandos (net start, netstat -anob y wevtutil con el registro de Security).</p>
+        </div>
+        <div class="pdf-wrap">
+            <a href="../pdf/actividad19.pdf" download><i class="fas fa-file-pdf" style="margin-right:10px;"></i> Descargar reporte completo (PDF)</a>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>
