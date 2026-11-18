@@ -130,6 +130,11 @@ main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:50px 20p
 .p3 .p-title{color:var(--c3);text-shadow:0 0 16px rgba(124,107,255,.35);}
 .p3 .pill{border-color:rgba(124,107,255,.35);color:var(--c3);background:rgba(124,107,255,.06);}
 .p3 .p-body{border-color:rgba(124,107,255,.15);background:rgba(124,107,255,.02);}
+.p3 .proj-card{border-color:rgba(124,107,255,.3);color:var(--txt);}
+.p3 .proj-card::before{background:var(--c3);}
+.p3 .proj-card:hover{border-color:rgba(124,107,255,.75);box-shadow:0 0 18px rgba(124,107,255,.18);}
+.p3 .proj-tag{background:rgba(124,107,255,.14);color:var(--c3);}
+.p3 .proj-cta{color:var(--c3);}
 
 /* footer */
 footer{position:relative;z-index:2;text-align:center;padding:20px;border-top:1px solid var(--bdr);color:var(--dim);font-size:11px;letter-spacing:2px;background:linear-gradient(0deg,rgba(179,136,255,.03) 0%,transparent 100%);}
@@ -151,8 +156,8 @@ footer span{color:var(--gd);}
   <div class="stats-bar">
     <div class="sb-item"><div class="sb-val" style="color:var(--c1);">01</div><div class="sb-lbl">Parcial 1</div></div>
     <div class="sb-item"><div class="sb-val" style="color:var(--c2);">01</div><div class="sb-lbl">Parcial 2</div></div>
-    <div class="sb-item"><div class="sb-val" style="color:var(--c3);">🔒</div><div class="sb-lbl">Parcial 3</div></div>
-    <div class="sb-item"><div class="sb-val" style="color:var(--g);">02</div><div class="sb-lbl">Disponibles</div></div>
+    <div class="sb-item"><div class="sb-val" style="color:var(--c3);">01</div><div class="sb-lbl">Parcial 3</div></div>
+    <div class="sb-item"><div class="sb-val" style="color:var(--g);">03</div><div class="sb-lbl">Disponibles</div></div>
   </div>
 </header>
 
@@ -231,18 +236,32 @@ footer span{color:var(--gd);}
 <div class="p3">
 <div class="parcial-block">
   <div class="p-header">
-    <div class="p-eyebrow">🟪 Parcial 3</div>
+    <div class="p-eyebrow">🟪 Parcial 3 · En curso</div>
     <div class="p-title">Proyecto — Parcial 3</div>
     <div class="p-pills">
-      <span class="pill">Contenido bloqueado</span>
+      <span class="pill">1 disponible</span>
+      <span class="pill">Autopsy · Forense</span>
     </div>
   </div>
   <div class="p-body">
-    <div class="denied-card">
-      <div class="dc-lock">🔒</div>
-      <div class="dc-title">ACCESO DENEGADO</div>
-      <div class="dc-sub">El proyecto de este parcial aún no está disponible. Se habilitará conforme avance la asignatura.</div>
-      <span class="dc-tag">Parcial 3</span>
+    <div class="proj-grid">
+      <a href="pr03.html" class="proj-card">
+        <div class="proj-icon-col">
+          <div class="proj-icon">🕵️</div>
+          <span class="proj-tag">PR03 · Parcial 3</span>
+        </div>
+        <div class="proj-content-col">
+          <div class="proj-name">Operación Narcos: expediente Kowhai</div>
+          <div class="proj-desc">Investigación forense digital sobre la imagen <strong style="color:#fff;">Narcos-1</strong> (escenario 2019 Narcos de Digital Corpora) en <strong style="color:#fff;">Autopsy</strong>. Se identificaron sistema, perfiles, navegación, documentos e imágenes con sus hashes MD5 y marcas temporales en <strong style="color:#fff;">NZDT (UTC+13)</strong>, y se reconstruyó la logística del caso (vuelos Brisbane ⇄ Wellington, rutas a puntos de entrega, Discord, herramientas de esteganografía y cifrado), diferenciando con rigor <strong style="color:#fff;">descarga ≠ instalación ≠ ejecución ≠ uso</strong>.</div>
+          <div class="proj-meta">
+            <span>Narcos-1 · Digital Corpora</span>
+            <span>Autopsy 4.23.1</span>
+            <span>15 preguntas + análisis</span>
+            <span>Informe PDF + portafolio</span>
+          </div>
+          <div class="proj-cta">Ver proyecto →</div>
+        </div>
+      </a>
     </div>
   </div>
 </div>
