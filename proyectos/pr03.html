@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR03 — Operación Narcos: expediente Kowhai (Autopsy)</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .info-box { text-align:center; border:1px dashed #b388ff; padding:15px; margin-bottom:0; }
+        .info-box p { margin:4px 0; }
+        .ok-badge { display:inline-block; border:2px solid #3b9dff; color:#3b9dff; font-weight:bold; padding:6px 20px; letter-spacing:3px; margin-top:10px; animation:blink-border 1.8s ease-in-out infinite; }
+        @keyframes blink-border { 0%,100%{box-shadow:0 0 6px #3b9dff;} 50%{box-shadow:0 0 20px #3b9dff,inset 0 0 10px rgba(59,157,255,.15);} }
+        .stat-row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+        .stat-card { background:rgba(179,136,255,.05); border:1px solid rgba(179,136,255,.3); border-top:2px solid #b388ff; padding:14px 20px; text-align:center; min-width:110px; }
+        .stat-card .sv { font-size:1.8rem; font-weight:900; color:#b388ff; line-height:1; }
+        .stat-card .sv.blue { color:#3b9dff; }
+        .stat-card .sl { font-size:.65rem; color:rgba(179,136,255,.6); letter-spacing:.1em; margin-top:3px; }
+        .lead { color:rgba(255,255,255,.85); line-height:1.85; font-size:.92rem; }
+        .lead strong { color:#b388ff; }
+        .sec-head { font-family:'Courier New',monospace; font-size:.78rem; letter-spacing:.18em; color:#3b9dff; text-transform:uppercase; border-bottom:1px solid rgba(59,157,255,.3); padding-bottom:8px; margin-bottom:4px; }
+        .concl-box { border:1px solid rgba(179,136,255,.2); border-top:2px solid #b388ff; padding:20px; background:rgba(179,136,255,.02); }
+        .concl-box h3 { font-size:.82rem; letter-spacing:.12em; margin-bottom:12px; color:#b388ff; }
+        .concl-box p { font-size:.85rem; color:rgba(255,255,255,.8); margin-bottom:8px; line-height:1.8; }
+        .concl-box p:last-child { margin-bottom:0; }
+        .concl-box strong { color:#b388ff; }
+        .biblio { border:1px solid rgba(59,157,255,.25); border-left:3px solid #3b9dff; padding:16px 18px; background:rgba(59,157,255,.03); font-size:.82rem; line-height:1.8; color:rgba(255,255,255,.82); }
+        .biblio a { color:#3b9dff; word-break:break-all; }
+        .biblio b { color:#3b9dff; }
+        .pdf-wrap { text-align:center; margin:40px 0 4px; font-family:'Courier New',monospace; }
+        .pdf-wrap a { display:inline-block; padding:12px 25px; border:2px solid #b388ff; color:#b388ff; text-decoration:none; font-weight:bold; font-size:1.1em; text-transform:uppercase; background:rgba(179,136,255,.1); box-shadow:0 0 10px rgba(179,136,255,.2); transition:.3s; letter-spacing:1px; }
+        .pdf-wrap a:hover { background:#b388ff; color:#0a0714; box-shadow:0 0 18px rgba(179,136,255,.4); }
+        .cmd-line { font-family:'Courier New',monospace; font-size:.8rem; color:#0a0714; background:#b388ff; display:inline-block; padding:6px 12px; border-radius:3px; margin:2px 0 10px; word-break:break-all; }
+        .cmd-line.blue { background:#3b9dff; }
+        .evid-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:12px; }
+        .evid-card { border:1px solid rgba(179,136,255,.25); overflow:hidden; background:rgba(0,0,0,.25); display:flex; flex-direction:column; align-items:center; }
+        .evid-card img { max-width:100%; width:auto; max-height:300px; display:block; margin:0 auto; image-rendering:-webkit-optimize-contrast; }
+
+        /* evidencia grande: una por fila, ancho completo */
+        .evid-grid { grid-template-columns:1fr; gap:18px; }
+        .evid-card img { max-height:none; width:100%; }
+    </style>
+</head>
+<body>
+<canvas id="matrix-left"></canvas>
+<canvas id="matrix-right"></canvas>
+
+<main>
+    <a href="proyectos.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a Proyectos</a>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-fingerprint"></i> PR03 — Operación Narcos: expediente Kowhai</h2>
+        <div class="info-box">
+            <p><strong>CNO IV — Programación WAP · Informática Forense</strong></p>
+            <p><strong>Alumna:</strong> Tristán Rivera Magdalena Yesenia — 174702 &nbsp;|&nbsp; <strong>Grupo:</strong> T37A</p>
+            <p><strong>Parcial:</strong> 3 &nbsp;|&nbsp; <strong>Herramienta:</strong> Autopsy 4.23.1 &nbsp;|&nbsp; <strong>Evidencia:</strong> imagen forense Narcos-1</p>
+            <p><strong>Escenario:</strong> 2019 Narcos (Digital Corpora) — ingreso de sustancias a Nueva Zelanda</p>
+            <div class="ok-badge">✓ 15 PREGUNTAS + ANÁLISIS DEL CASO</div>
+        </div>
+        <div class="stat-row">
+            <div class="stat-card"><div class="sv">Win 10 Pro</div><div class="sl">SISTEMA (SK-DESKTOP)</div></div>
+            <div class="stat-card"><div class="sv blue">Steve</div><div class="sl">PERFIL PRINCIPAL</div></div>
+            <div class="stat-card"><div class="sv">BNE ⇄ WLG</div><div class="sl">BRISBANE – WELLINGTON</div></div>
+            <div class="stat-card"><div class="sv blue">NZDT</div><div class="sl">UTC+13</div></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-bullseye"></i> Objetivo</h2>
+        <p class="lead">A partir de la imagen forense <strong>Narcos-1</strong> del equipo de Steve Kowhai, se examinó la evidencia digital en <strong>Autopsy</strong> para identificar sistema, perfiles, navegación, documentos, imágenes, metadatos (hashes MD5 y marcas temporales en <strong>NZDT, UTC+13</strong>) y herramientas instaladas. El objetivo es determinar <strong>qué actividades pueden demostrarse a partir del disco</strong>, diferenciando con rigor lo que la evidencia respalda de lo que no puede concluirse.</p>
+    </section>
+
+    <!-- ══════════ PARTE I ══════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <div class="sec-head">// Parte I · Extracción e identificación de evidencia — Sistema operativo y navegación</div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 01 — Edición y versión de Windows</h2>
+        <div class="cmd-line">Windows 10 Pro · AMD64 · build 17763</div>
+        <p class="lead">Artefacto: <strong>Operating System Information</strong>, que Autopsy obtiene del registro <strong>SOFTWARE</strong> (Microsoft\Windows NT\CurrentVersion). Equipo <strong>SK-DESKTOP</strong>, propietario <strong>Steve</strong>, Product ID 00330-80000-00000-AA502.</p>
+        <div class="evid-grid"><div class="evid-card"><img src="pr03-01-so.png" alt="Sistema operativo"></div></div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 02 — Carpeta del perfil principal</h2>
+        <div class="cmd-line">Steve · C:\Users\Steve</div>
+        <p class="lead">El perfil principal es <strong>Steve</strong> y su ruta absoluta es <strong>C:\Users\Steve</strong> (en la imagen, /img_Narcos-1/vol_vol7/Users/Steve, con 34 subcarpetas de perfil).</p>
+        <div class="evid-grid"><div class="evid-card"><img src="pr03-02-perfil.png" alt="Perfil Steve"></div></div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 03 — Clave UserAssist</h2>
+        <div class="cmd-line">C:\Users\Steve\NTUSER.DAT → Software\Microsoft\Windows\CurrentVersion\Explorer\UserAssist</div>
+        <p class="lead">La clave <strong>UserAssist</strong> (que registra ejecución de programas por el usuario) vive dentro del hive <strong>NTUSER.DAT</strong> del perfil Steve, visible en el listado del perfil.</p>
+        <div class="evid-grid"><div class="evid-card"><img src="pr03-02-perfil.png" alt="NTUSER.DAT del perfil Steve"></div></div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 04 — Dos navegadores con actividad</h2>
+        <div class="cmd-line">Google Chrome (History) · Internet Explorer / Edge (WebCacheV01.dat)</div>
+        <p class="lead"><strong>Chrome</strong> registra su historial en el archivo <strong>History</strong> (SQLite) en C:\Users\Steve\AppData\Local\Google\Chrome\User Data\Default\History; <strong>Internet Explorer/Edge</strong> en la base <strong>WebCacheV01.dat</strong>. En el historial se observan consultas de <strong>Google Maps</strong> (rutas Wainuiomata → Eastbourne) y adjuntos de <strong>discordapp.com</strong>.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-04-webhist.png" alt="Web History Chrome e IE"></div>
+            <div class="evid-card"><img src="pr03-04-chromepath.png" alt="Ruta del perfil Chrome"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 05 — MD5 del History de Chrome</h2>
+        <div class="cmd-line blue">MD5: F3F979C6DEE9FBB7CBDF5818AAA4B723</div>
+        <p class="lead">Archivo History del perfil predeterminado de Chrome (application/x-sqlite3, 360,448 bytes). SHA-256 cf4d621f…abde02b.</p>
+        <div class="evid-grid"><div class="evid-card"><img src="pr03-05-md5hist.png" alt="MD5 History Chrome"></div></div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <div class="sec-head">// Parte I · Documentos, imágenes y metadatos</div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 06 — Ruta de airport crystals.jpg</h2>
+        <div class="cmd-line">C:\Users\Steve\Documents\Misc\airport crystals.jpg</div>
+        <p class="lead">Imagen JPEG (77,643 bytes, MD5 f938f92d…e830a). Su contenido es una captura de <strong>Google Maps de "Eastbourne Library"</strong>, uno de los puntos de entrega del caso.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-06-airport.png" alt="Metadatos airport crystals.jpg"></div>
+            <div class="evid-card"><img src="pr03-07-airport-map.png" alt="Contenido: Eastbourne Library"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 07 — Fecha de creación de airport crystals.jpg (NZDT)</h2>
+        <div class="cmd-line blue">2019-01-31 10:25:18 NZDT &nbsp;(= 2019-01-30 15:25:18 local CST, UTC−6)</div>
+        <p class="lead">Autopsy muestra la hora en la zona local del equipo de análisis (<strong>CST, UTC−6</strong>); convertida a la zona del caso <strong>NZDT (UTC+13)</strong> corresponde al 31/01/2019 10:25:18.</p>
+        <div class="evid-grid"><div class="evid-card"><img src="pr03-06-airport.png" alt="Created airport crystals.jpg"></div></div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 08 — MD5 de dropoff.jpg</h2>
+        <div class="cmd-line blue">MD5: 7FEB763BEBE42C3A3464C9EE3BB1D3E8</div>
+        <p class="lead">C:\Users\Steve\Documents\Misc\dropoff.jpg (177,888 bytes). SHA-256 433d3a05…5ad23f9.</p>
+        <div class="evid-grid"><div class="evid-card"><img src="pr03-08-dropoff.png" alt="Metadatos dropoff.jpg"></div></div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 09 — Última modificación de dropoff.jpg (NZDT)</h2>
+        <div class="cmd-line blue">2019-02-02 14:06:06 NZDT &nbsp;(= 2019-02-01 19:06:06 local CST, UTC−6)</div>
+        <p class="lead">El atributo Modified del archivo, convertido de la hora local del análisis (CST) a la zona del caso (NZDT, UTC+13).</p>
+        <div class="evid-grid"><div class="evid-card"><img src="pr03-08-dropoff.png" alt="Modified dropoff.jpg"></div></div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 10 — Imagen de reservaciones de vuelo</h2>
+        <div class="cmd-line">flightbookings.PNG · C:\Users\Steve\Documents\Misc\flightbookings.PNG</div>
+        <p class="lead">Captura de una <strong>reserva aérea de ida y vuelta Brisbane (BNE) ⇄ Wellington (WLG)</strong> para dos adultos: ida 16/02/2019 (Virgin Australia) y regreso 23/02/2019 (Qantas, vía Auckland), total AU$1,327.82.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-10-flight.png" alt="Metadatos flightbookings.PNG"></div>
+            <div class="evid-card"><img src="pr03-10-flightview.png" alt="Reserva de vuelo BNE-WLG"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 11 — MD5 de Method run.jpg</h2>
+        <div class="cmd-line blue">MD5: 69B225BC0EF5A0C003F1E2A6646AAF92</div>
+        <p class="lead">C:\Users\Steve\Documents\Misc\Method run.jpg (145,213 bytes). Su contenido es un mapa de ruta con la palabra "Home" cerca de Wainuiomata.</p>
+        <div class="evid-grid"><div class="evid-card"><img src="pr03-11-method.png" alt="Metadatos Method run.jpg"></div></div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <div class="sec-head">// Parte I · Programas y otros artefactos</div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 12 — MD5 de BNE.png</h2>
+        <div class="cmd-line blue">MD5: DFFA98BDD7371D1806ADB09DB27BA283</div>
+        <p class="lead">C:\Users\Steve\Downloads\Misc\BNE.png (4,376,793 bytes, "Downloaded From: about:internet"). Es una fotografía del <strong>Story Bridge de Brisbane</strong> (BNE = aeropuerto de Brisbane), el origen del vuelo.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-12-bne.png" alt="Metadatos BNE.png"></div>
+            <div class="evid-card"><img src="pr03-12-brisbane.png" alt="BNE.png: Brisbane"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 13 — Instalador de esteganografía</h2>
+        <div class="cmd-line">Image Steganography 1.5.2 Setup.exe · C:\Users\Steve\Downloads\</div>
+        <div class="cmd-line blue">MD5: C9B7C382DEA6D7F45AE1BF437860CB69</div>
+        <p class="lead">Instalador de una herramienta de <strong>esteganografía</strong> (application/x-msdownload, 559,616 bytes) en la carpeta Downloads, junto a otros instaladores.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-13-stego.png" alt="Metadatos Image Steganography"></div>
+            <div class="evid-card"><img src="pr03-downloads.png" alt="Downloads: instaladores"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 14 — Instalador de cifrado</h2>
+        <div class="cmd-line">TrueCrypt Setup 7.1a.exe · C:\Users\Steve\Downloads\</div>
+        <p class="lead">Instalador de la herramienta de <strong>cifrado</strong> TrueCrypt, en la misma carpeta Downloads (donde conviven CCleaner, Chrome, Apache OpenOffice e Image Steganography).</p>
+        <div class="evid-grid"><div class="evid-card"><img src="pr03-14-truecrypt.png" alt="TrueCrypt en Downloads"></div></div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-angle-right"></i> 15 — Caché de Discord y ActivitiesCache.db (Timeline)</h2>
+        <div class="cmd-line">Discord: C:\Users\Steve\AppData\Roaming\Discord\Cache</div>
+        <div class="cmd-line">Timeline: C:\Users\Steve\AppData\Local\ConnectedDevicesPlatform\2418c0082017486a\ActivitiesCache.db</div>
+        <p class="lead">La caché de <strong>Discord</strong> contiene 130 recursos (data_0..3, f_0000xx). <strong>ActivitiesCache.db</strong> (Windows Timeline) es una base SQLite de 2 MB con 395 registros de actividad (visitas a stuff.co.nz, bing, espncricinfo…).</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-15-discord.png" alt="Caché de Discord"></div>
+            <div class="evid-card"><img src="pr03-15-activities.png" alt="Metadatos ActivitiesCache.db"></div>
+            <div class="evid-card"><img src="pr03-activity-table.png" alt="Registros de Timeline"></div>
+        </div>
+    </section>
+
+    <!-- ══════════ PARTE II ══════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <div class="sec-head">// Parte II · Investigación, interpretación y análisis del caso</div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-route"></i> 16 — flightbookings · BNE.png · dropoff.jpg</h2>
+        <p class="lead">Los tres archivos convergen en un mismo eje <strong>Brisbane → Wellington</strong>. <strong>flightbookings.PNG</strong> documenta un vuelo redondo BNE ⇄ WLG para dos adultos (16–23 feb 2019, AU$1,327.82); <strong>BNE.png</strong> es una foto de Brisbane —origen del vuelo— descargada de Internet el 31/01/2019; <strong>dropoff.jpg</strong> (modificado el 01/02/2019) documenta un punto de entrega. <strong>Coincidencia:</strong> hay planificación logística que une origen, destino y punto de entrega, consistente con el escenario. <strong>No puede confirmarse</strong> solo con esto que el viaje se realizara ni que su propósito fuera ilícito (faltarían tarjetas de embarque o registros migratorios).</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-10-flightview.png" alt="Reserva BNE-WLG"></div>
+            <div class="evid-card"><img src="pr03-12-brisbane.png" alt="BNE.png Brisbane"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-map-location-dot"></i> 17 — airport crystals.jpg · Method run.jpg vs actividad</h2>
+        <p class="lead">Pese a sus nombres, ambas son <strong>capturas de Google Maps</strong> de la región de Wellington/Lower Hutt: airport crystals.jpg muestra <strong>Eastbourne Library</strong> (punto de entrega) y Method run.jpg una ruta de conducción con "<strong>Home</strong>" escrito a mano cerca de Wainuiomata. Contrastadas con el historial de Chrome (rutas Google Maps "dir" Wainuiomata → Eastbourne) y con <strong>ActivitiesCache.db</strong> (Timeline, 395 actividades), la interpretación sostenible es <strong>planificación de rutas y ubicaciones físicas</strong> a fines de enero de 2019. <strong>No puede afirmarse</strong> que esos recorridos se ejecutaran físicamente ni que su finalidad fuera necesariamente delictiva.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-07-airport-map.png" alt="Eastbourne Library"></div>
+            <div class="evid-card"><img src="pr03-method-map.png" alt="Ruta Method run con Home"></div>
+            <div class="evid-card"><img src="pr03-activity-table.png" alt="Windows Timeline"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fab fa-discord"></i> 18 — Evidencia de Discord y sus límites</h2>
+        <p class="lead"><strong>Permite afirmar</strong> que Discord estuvo presente y se usó: (1) el instalador <strong>DiscordSetup.exe</strong> en Downloads\Misc; (2) la carpeta de <strong>caché</strong> en AppData\Roaming\Discord\Cache; y (3) adjuntos de <strong>cdn.discordapp.com</strong> en el historial (p. ej. "Steve_K.PNG"). <strong>No puede concluirse</strong> sin recuperar mensajes verificables: el contenido de las conversaciones, la identidad real de los interlocutores ni la autoría. La caché guarda fragmentos de recursos, no una transcripción.</p>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-15-discord.png" alt="Caché de Discord"></div>
+            <div class="evid-card"><img src="pr03-04-webhist.png" alt="Adjuntos discordapp.com"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-lock"></i> 19 — Esteganografía y cifrado: descarga ≠ instalación ≠ ejecución ≠ uso</h2>
+        <p class="lead">Se hallaron dos instaladores en Downloads: <strong>Image Steganography 1.5.2 Setup.exe</strong> y <strong>TrueCrypt Setup 7.1a.exe</strong>.</p>
+        <div class="concl-box">
+            <p><strong>Descarga</strong> — respaldada por la presencia física de los .exe y sus atributos Zone.Identifier (origen Internet).</p>
+            <p><strong>Instalación</strong> — se respaldaría con entradas en Installed Programs / claves Uninstall, accesos directos o carpetas de programa; la sola presencia del instalador no la prueba.</p>
+            <p><strong>Ejecución</strong> — requeriría Prefetch, UserAssist, ShimCache/AmCache o Run Programs que registren que el binario corrió.</p>
+            <p><strong>Uso efectivo</strong> — el nivel más alto: exigiría un contenedor TrueCrypt montado o archivos con carga esteganográfica (y el material oculto/descifrado). <strong>No se localizaron</strong> contenedores cifrados abiertos ni archivos con esteganografía confirmada.</p>
+            <p><strong>Conclusión:</strong> la evidencia respalda con solidez la <strong>descarga</strong> (y plausiblemente la instalación), pero <strong>no</strong> permite afirmar uso efectivo para ocultar o cifrar información.</p>
+        </div>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-13-stego.png" alt="Image Steganography"></div>
+            <div class="evid-card"><img src="pr03-14-truecrypt.png" alt="TrueCrypt"></div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-scale-balanced"></i> 20 — Hipótesis y explicación alternativa</h2>
+        <div class="concl-box">
+            <h3>// HIPÓTESIS PRINCIPAL</h3>
+            <p>El equipo de Steve Kowhai se utilizó como herramienta de <strong>planeación y coordinación logística</strong> en una operación de ingreso/distribución de sustancias entre Brisbane y la región de Wellington.</p>
+            <p><strong>Cuatro hallazgos que la sustentan:</strong> (1) reserva de vuelo redonda BNE ⇄ WLG para dos adultos + foto de Brisbane; (2) mapas y rutas a puntos de entrega concretos (Eastbourne Library, "Home" en Wainuiomata) corroborados por Google Maps y Windows Timeline; (3) presencia y uso de Discord con intercambio de imágenes; (4) instaladores de esteganografía y cifrado que denotan intención de ocultar/proteger información.</p>
+            <h3 style="margin-top:14px;">// EXPLICACIÓN ALTERNATIVA</h3>
+            <p>Las imágenes podrían corresponder a un <strong>viaje turístico personal</strong>, Discord a uso social y las herramientas haberse descargado por curiosidad sin usarse. Sin mensajes recuperados, contenedores cifrados abiertos ni contenido oculto confirmado, <strong>no puede afirmarse participación directa</strong>.</p>
+            <h3 style="margin-top:14px;">// DOS EVIDENCIAS ADICIONALES NECESARIAS</h3>
+            <p>(a) Recuperación y descifrado de mensajes/adjuntos de Discord —correlacionando con el volcado de memoria RAM— para establecer contenido, interlocutores y autoría; (b) análisis de artefactos de ejecución (Prefetch/UserAssist/AmCache) y búsqueda de contenedores TrueCrypt y de archivos con carga esteganográfica, para pasar de "descarga/instalación" a "uso efectivo".</p>
+        </div>
+        <div class="evid-grid">
+            <div class="evid-card"><img src="pr03-10-flightview.png" alt="Reserva de vuelo"></div>
+            <div class="evid-card"><img src="pr03-method-map.png" alt="Ruta a Home"></div>
+        </div>
+    </section>
+
+    <!-- ══════════ BIBLIOGRAFÍA ══════════ -->
+    <section class="window">
+        <div class="window-bar"><span class="btn red"></span><span class="btn yellow"></span><span class="btn green"></span></div>
+        <h2><i class="fas fa-book"></i> Referencias bibliográficas</h2>
+        <div class="biblio">
+            <p><b>Referencia obligatoria (corpus estandarizados):</b><br>
+            Garfinkel, S., Farrell, P., Roussev, V. &amp; Dinolt, G. (2009). <i>Bringing Science to Digital Forensics with Standardized Forensic Corpora.</i> Digital Forensic Research Workshop (DFRWS), Montreal, Canadá. <a href="https://simson.net/clips/academic/2009.DFRWS.Corpora.pdf" target="_blank">https://simson.net/clips/academic/2009.DFRWS.Corpora.pdf</a></p>
+            <p style="margin-top:10px;"><b>Escenario de práctica (Digital Corpora):</b><br>
+            Garfinkel, S. (2019). <i>Narcos Scenario — Narcos-1 (disk image).</i> Digital Corpora: Scenarios. <a href="https://digitalcorpora.org/corpora/scenarios/2019-narcos/" target="_blank">https://digitalcorpora.org/corpora/scenarios/2019-narcos/</a></p>
+        </div>
+        <div class="pdf-wrap">
+            <a href="../pdf/pr03.pdf" download><i class="fas fa-file-pdf" style="margin-right:10px;"></i> Descargar informe completo (PDF)</a>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>
